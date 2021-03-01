@@ -1,0 +1,19 @@
+---
+title: "Your project title"
+author: "Team Name: Team member 1, Team member 2, Team member 3, Team member 4"
+date: "Update date"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      warning = FALSE, 
+                      message = FALSE)
+```
+
+```{r load-packages-data}
+# load packages and data
+
+```
+
+Your written report goes here! Before you submit, make sure your code chunks are turned off with `echo = FALSE` and there are no warnings or messages with `warning = FALSE` and `message = FALSE` 
