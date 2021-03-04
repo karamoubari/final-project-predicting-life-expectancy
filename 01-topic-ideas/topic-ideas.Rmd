@@ -13,8 +13,12 @@ knitr::opts_chunk$set(echo = FALSE,
 
 
 ```{r load-packages-data}
-# load packages and data
+# Load packages
+library(tidyverse)
+library(here)
 
+# Load data
+flying <- read_csv(here("data", "flying.csv"))
 ```
 
 Put all data sets in the `data` folder. 
@@ -26,6 +30,10 @@ Put all data sets in the `data` folder.
 ### Data dictionary 
 
 ### `glimpse` of data
+
+```{r glimpse-flying}
+glimpse(flying)
+```
 
 ## Data Set 2
 
