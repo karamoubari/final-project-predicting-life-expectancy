@@ -1,7 +1,7 @@
 ---
 title: "Topic ideas"
-author: "Team Name: Team member 1, Team member 2, Team member 3, Team member 4"
-date: "Update date"
+author: "Team Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo"
+date: "March 4, 2021"
 output: pdf_document
 ---
 
