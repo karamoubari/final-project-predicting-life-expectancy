@@ -19,11 +19,12 @@ library(here)
 
 # Load data
 flying <- read_csv(here("data", "flying.csv"))
+life <- read_csv("../data/life_expectancy.csv")
 ```
 
 Put all data sets in the `data` folder. 
 
-## Data Set 1
+## Data Set 1 (Flying)
 
 ### Description 
 
@@ -35,13 +36,20 @@ Put all data sets in the `data` folder.
 glimpse(flying)
 ```
 
-## Data Set 2
+## Data Set 2 (Life Expectancy)
 
 ### Description 
+
+Data-set related to life expectancy, health factors, and economic data for 193 countries collected from WHO data repository and from United Nation.
 
 ### Data dictionary 
 
 ### `glimpse` of data
+
+```{r glimpse-life}
+glimpse(life)
+```
+
 
 ## Data Set 3 (optional)
 
