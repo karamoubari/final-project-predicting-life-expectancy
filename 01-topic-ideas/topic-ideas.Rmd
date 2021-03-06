@@ -28,7 +28,16 @@ Put all data sets in the `data` folder.
 
 ### Description 
 
+This represents the results of a survey conducted by FiveThirtyEight through SurveyMonkey on in-flight conduct. It was downloaded from Kaggle (https://www.kaggle.com/fivethirtyeight/fivethirtyeight-flying-etiquette-survey-dataset?select=flying-etiquette.csv). An article was also written about this survey (https://fivethirtyeight.com/features/airplane-etiquette-recline-seat/).
+
 ### Data dictionary 
+
+Many of the variables appear to be named after questions on the survey. All of them are comprehensible from their names alone. `Age` and `Household Income` are categorical variables. `How tall are you?` is in feet and inches, but precise heights are not available for those taller than 6'6'' or shorter than 5'0''.
+
+```{r flying-variables}
+tibble(Variables = names(flying)) %>%
+  kable()
+```
 
 ### `glimpse` of data
 
