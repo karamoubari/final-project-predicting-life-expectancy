@@ -32,7 +32,7 @@ This represents the results of a survey conducted by FiveThirtyEight through Sur
 
 ### Data dictionary 
 
-Many of the variables appear to be named after questions on the survey. All of them are comprehensible from their names alone. `Age` and `Household Income` are categorical variables. `How tall are you?` is in feet and inches, but precise heights are not available for those taller than 6'6'' or shorter than 5'0''.
+Many of the variables appear to be named after queries on the survey. All of them are comprehensible from their names alone. `Age` and `Household Income` are categorical variables. `How tall are you?` is in feet and inches, but precise heights are not available for those taller than 6'6'' or shorter than 5'0''.
 
 ```{r flying-variables}
 tibble(Variables = names(flying)) %>%
