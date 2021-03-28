@@ -20,6 +20,12 @@ life <- read_csv(here("data", "life_expectancy.csv"))
 
 ## Section 1. Introduction
 
+By telling us the average age of death in a population, life expectancy is key metric for understanding a country's health. According to Max Roser, Esteban Ortiz-Ospina and Hannah Ritchie from Our World in Data, "Broader than the narrow metric of the infant and child mortality, which focus solely at mortality at a young age, life expectancy captures the mortality along the entire life course." Over the course of history, life expectancy has risen dramatically. It is estimated that in premodern times, life expectancy worldwide was only about 30 years. Since the Industrial Revolution in the 18th and 19th centuries, many countries had huge gains in this number. And since the beginning of the 20th century, global average life expectancy has risen to about 70 years. However, there remain inequalities in this number. Currently (as of 2019), the Central African Republic has the lowest life expectancy of 53 years while Japan with the highest is 83.
+
+In this project we plan on using various regression analysis methods including, but not limited to, multiple linear regression, statistical inference, analysis of variance, and model selection in aan attempt to understand country and region-level life expectancy, as well the health, social, and economic relationships behind this number. 
+
+
+
 ## Section 2. Data description
 
 Our data set is comprised of information that individuals gleaned from the websites of the World Health Organization and the United Nations. Each row gives values of various health, social, and economic variables for one of 193 countries in a given year from 2000 to 2015. 
