@@ -1,12 +1,13 @@
 # Project
 
-### Understanding Health, Social, and Economic Factors Of a Country's Life Expectancy
+## Understanding The Health, Social, and Economic Factors Of a Country's Life Expectancy
 
 [Final project](https://sta210-sp21.netlify.app/project/) for STA 210: Regression Analysis.
 
 ## Project summary 
 
-Add a 1 paragraph summary of your final project.
+In this project we will be using a data set that contains various health, social, and economic variables for 193 countries from 2000-2015 to understand life expectancy. We plan on using various regression analysis methods including, but not limited to multiple linear regression, statistical inference, analysis of variance, aand model selection. Through this project we will attempt to understand country and region-level life expectancy, as well the health, social, and economic relationships behind it. Overall, in addition to statistics and data science, this project has applications to the areas of global health, international development, economics, and public policy.
+
 
 ## Data dictionary 
 
