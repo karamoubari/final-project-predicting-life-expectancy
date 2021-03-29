@@ -47,7 +47,8 @@ The response variable we will be using in this project is `Life expectancy`. Thi
 life %>%
   filter(!is.na(`Life expectancy`)) %>%
   summarize(min = min(`Life expectancy`), 
-            max = max(`Life expectancy`), 
+            max = max(`Life expectancy`),
+            range = max - min,
             mean = mean(`Life expectancy`), 
             median = median(`Life expectancy`), 
             first_quartile = quantile(`Life expectancy`, .25), 
@@ -62,9 +63,20 @@ life %>%
   kable(digits = 3, caption = "2000 World Average Life Expectancy")
 
 life %>%
+  filter(Year == "2000") %>%
+  summarise(world_median_2000 = median(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2000 World Median Life Expectancy")
+
+life %>%
   filter(Year == "2015") %>%
   summarise(world_avg_2015 = mean(`Life expectancy`)) %>%
   kable(digits = 3, caption = "2015 World Average Life Expectancy")
+
+life %>%
+  filter(Year == "2015") %>%
+  summarise(world_median_2015 = median(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2015 World Median Life Expectancy")
+
 ```
 
 
