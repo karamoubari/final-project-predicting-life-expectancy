@@ -12,7 +12,6 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r load-packages-data}
-# load packages and data
 library(tidyverse)
 library(here)
 library(broom)
@@ -38,13 +37,34 @@ Sources: \newline
 
 Our data set is comprised of information that individuals gleaned from the websites of the World Health Organization and the United Nations. Each row gives values of various health, social, and economic variables for one of 193 countries in a given year from 2000 to 2015. 
 
+\newpage
 
 ## Section 3. Analysis approach
 
 The response variable we will be using in this project is `Life expectancy`. This is a measure of the average age of death in a year for the given country during that year.
 
 ```{r summary-stats}
+life %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  summarize(min = min(`Life expectancy`), 
+            max = max(`Life expectancy`), 
+            mean = mean(`Life expectancy`), 
+            median = median(`Life expectancy`), 
+            first_quartile = quantile(`Life expectancy`, .25), 
+            third_quartile = quantile(`Life expectancy`, .75), 
+            iqr = IQR(`Life expectancy`), 
+            standard_deviation = sd(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "Summary Statistics of Response Variable, Life Expectancy")
 
+life %>%
+  filter(Year == "2000") %>%
+  summarise(world_avg_2000 = mean(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2000 World Average Life Expectancy")
+
+life %>%
+  filter(Year == "2015") %>%
+  summarise(world_avg_2015 = mean(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2015 World Average Life Expectancy")
 ```
 
 
