@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = FALSE,
 # load packages and data
 library(tidyverse)
 library(here)
+library(broom)
 life <- read_csv(here("data", "life_expectancy.csv"))
 ```
 
@@ -48,7 +49,28 @@ The response variable we will be using in this project is `Life expectancy`. Thi
 
 
 ```{r summary-visualizations}
+p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
+  geom_histogram() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "Count")
 
+p2 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
+  geom_density() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "Proportion")
+
+p3 <- ggplot(data = life, mapping = aes(x = `Life expectancy`, y = "")) + 
+  geom_boxplot() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "")
+
+(p1 + p2) / p3
 ```
 
 In terms of predictor variables, the full model that will have all potential predictor variables will include, all variables in the data set apart from `Life expectancy` which is the response variable and `Country` which is the identifier variable.
