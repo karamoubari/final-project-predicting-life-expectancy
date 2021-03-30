@@ -35,7 +35,7 @@ Sources: \newline
 
 ## Section 2. Data description
 
-Our data set is comprised of information that individuals gleaned from the websites of the World Health Organization and the United Nations. Each row gives values of various health, social, and economic variables for one of 193 countries in a given year from 2000 to 2015. 
+Our selected data set is comprised of information that others gleaned from the websites of the World Health Organization and the United Nations. Every entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015. Additional information can be found on https://www.kaggle.com/kumarajarshi/life-expectancy-who.
 
 \newpage
 
