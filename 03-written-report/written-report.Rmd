@@ -16,6 +16,74 @@ knitr::opts_chunk$set(echo = FALSE,
 library(tidyverse)
 library(here)
 life <- read_csv(here("data", "life_expectancy.csv"))
+regions <- read_csv(here("data", "regions.csv"))
+```
+
+```{r add-region}
+regions <- regions %>%
+  select(Country, Region) %>%
+  mutate(Country = gsub("&", "and", Country))
+
+initial_join <- life %>%
+  left_join(regions, by = "Country") %>%
+  select(Country, Region, Year:Schooling)
+
+(na_countries <- initial_join %>%
+  select(Country, Region) %>%
+  distinct() %>%
+  filter(is.na(Region)) %>%
+  select(Country) %>%
+  pull())
+
+# Montenegro, Niue, and South Sudan do not appear in 'regions'
+regions <- regions %>%
+  mutate(
+    Country = case_when(
+      Country == "Bahamas, The" ~ "Bahamas",
+      Country == "Bolivia" ~ "Bolivia (Plurinational State of)",
+      Country == "Brunei" ~ "Brunei Darussalam",
+      Country == "Cote d'Ivoire" ~ "Côte d'Ivoire",
+      Country == "Cape Verde" ~ "Cabo Verde",
+      Country == "Central African Rep." ~ "Central African Republic",
+      Country == "Congo, Repub. of the" ~ "Congo",
+      Country == "Czech Republic" ~ "Czechia",
+      Country == "Korea, North" ~ "Democratic People's Republic of Korea",
+      Country == "Congo, Dem. Rep." ~ "Democratic Republic of the Congo",
+      Country == "Gambia, The" ~ "Gambia",
+      Country == "Iran" ~ "Iran (Islamic Republic of)",
+      Country == "Laos" ~ "Lao People's Democratic Republic",
+      Country == "Micronesia, Fed. St." ~ "Micronesia (Federated States of)",
+      Country == "Burma" ~ "Myanmar",
+      Country == "Korea, South" ~ "Republic of Korea",
+      Country == "Moldova" ~ "Republic of Moldova",
+      Country == "Russia" ~ "Russian Federation",
+      Country == "Syria" ~ "Syrian Arab Republic",
+      Country == "Macedonia" ~ "The former Yugoslav republic of Macedonia",
+      Country == "East Timor" ~ "Timor-Leste",
+      Country == "United Kingdom" ~ "United Kingdom of Great Britain and Northern Ireland",
+      Country == "Tanzania" ~ "United Republic of Tanzania",
+      Country == "United States" ~ "United States of America",
+      Country == "Venezuela" ~ "Venezuela (Bolivarian Republic of)",
+      Country == "Vietnam" ~ "Viet Nam",
+      TRUE ~ Country
+    )
+  )
+
+life <- life %>%
+  left_join(regions, by = "Country") %>%
+  select(Country, Region, Year:Schooling)
+
+life$Region[life$Country == "Montenegro"] <- "EASTERN EUROPE"
+life$Region[life$Country == "Niue"] <- "OCEANIA"
+life$Region[life$Country == "South Sudan"] <- "SUB-SAHARAN AFRICA"
+
+rm(initial_join)
+rm(na_countries)
+rm(regions)
+```
+
+```{r filter-year}
+# Choose year with least missing data
 ```
 
 Your written report goes here! Before you submit, make sure your code chunks are turned off with `echo = FALSE` and there are no warnings or messages with `warning = FALSE` and `message = FALSE` 
@@ -29,6 +97,8 @@ In addition to the more obvious health-related connections to life expectancy, n
 In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing". We also predict that, on average, life expectancy will have increased internationally in the 15 years that are documented in the data set.
 
 Our selected data set is comprised of information that others gleaned from the websites of the World Health Organization and the United Nations. Every entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015. Additional information can be found on https://www.kaggle.com/kumarajarshi/life-expectancy-who.
+
+We also combined this data set with another data set downloaded from https://www.kaggle.com/fernandol/countries-of-the-world. 
 
 ## Exploratory Data Analysis
 
