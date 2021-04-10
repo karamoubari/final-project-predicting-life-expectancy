@@ -31,3 +31,12 @@ In this project we plan on using various regression analysis methods including, 
 In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing". We also predict that, on average, life expectancy will have increased internationally in the 15 years that are documented in the data set.
 
 Our selected data set is comprised of information that others gleaned from the websites of the World Health Organization and the United Nations. Every entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015. Additional information can be found on https://www.kaggle.com/kumarajarshi/life-expectancy-who.
+
+## Methodology
+
+## Results
+
+## Sources
+
+[1] https://ourworldindata.org/life-expectancy \newline
+[2] https://europepmc.org/article/med/12785422/reload=0#impact
