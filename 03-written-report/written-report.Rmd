@@ -19,7 +19,7 @@ life <- read_csv(here("data", "life_expectancy.csv"))
 regions <- read_csv(here("data", "regions.csv"))
 ```
 
-```{r add-region}
+```{r add-region, include=FALSE}
 regions <- regions %>%
   select(Country, Region) %>%
   mutate(Country = gsub("&", "and", Country))
@@ -82,8 +82,42 @@ rm(na_countries)
 rm(regions)
 ```
 
-```{r filter-year}
-# Choose year with least missing data
+```{r filter-year, include=FALSE}
+na_prop <- function(x) {
+  x %>%
+    is.na() %>%
+    sum() %>%
+    prod(1 / n()) 
+}
+
+years <- rep(list(NA), 16)
+for(year in 2000:2015) {
+  temp <- life %>%
+    filter(Year == year) %>%
+    summarize(across(everything(), na_prop)) %>%
+    pivot_longer(cols = everything(),
+                 names_to = "variable",
+                 values_to = "na_prop") %>%
+    pull(na_prop)
+  names(temp) <- names(life)
+  years[[year - 1999]] <- temp
+}
+names(years) <- 2000:2015
+
+# 2011 is the latest year where no variable 
+# has a missing rate greater than 0.22.
+map_dbl(years, ~ any(`>`(., 0.22)))
+
+# All the years where no variable has a missing rate greater 
+# than 0.22 has a 'population' missing rate of 0.2185792.
+map(years, ~ .[`>`(., 0.20)])
+
+life <- filter(life, Year == 2011)
+
+# Remove unnecessary objects
+rm(na_prop)
+rm(years)
+rm(year)
 ```
 
 Your written report goes here! Before you submit, make sure your code chunks are turned off with `echo = FALSE` and there are no warnings or messages with `warning = FALSE` and `message = FALSE` 
