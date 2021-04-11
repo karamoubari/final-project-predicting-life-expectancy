@@ -118,6 +118,7 @@ life <- filter(life, Year == 2011)
 rm(na_prop)
 rm(years)
 rm(year)
+rm(temp)
 ```
 
 Your written report goes here! Before you submit, make sure your code chunks are turned off with `echo = FALSE` and there are no warnings or messages with `warning = FALSE` and `message = FALSE` 
