@@ -143,6 +143,15 @@ In this project we plan on using various regression analysis methods including, 
 
 The response variable we will be using in this project is `Life expectancy`. This is a measure of the average age of death in a year for the given country during that year. In terms of regression model technique, we will be using multiple linear regression because our response variable is quantitative.
 
+
+```{r model-selection}
+
+
+
+```
+
+
+
 ## Results
 
 ## Sources
