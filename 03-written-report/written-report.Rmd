@@ -80,6 +80,9 @@ life$Region[life$Country == "South Sudan"] <- "SUB-SAHARAN AFRICA"
 rm(initial_join)
 rm(na_countries)
 rm(regions)
+
+# life dataset after joining and with data from all years
+life_all <- life
 ```
 
 ```{r filter-year, include=FALSE}
@@ -135,7 +138,101 @@ Our selected data set is comprised of information that others gleaned from the w
 
 We also combined this data set with another data set downloaded from https://www.kaggle.com/fernandol/countries-of-the-world. 
 
+\newpage
+
 ## Exploratory Data Analysis
+
+First, we will look at some summary statistics of our response variable, 'Life expectancy'.
+
+```{r summary-stats1, warning = FALSE}
+life_all %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  summarize(min = min(`Life expectancy`), 
+            max = max(`Life expectancy`),
+            range = max - min,
+            mean = mean(`Life expectancy`), 
+            median = median(`Life expectancy`), 
+            Q1 = quantile(`Life expectancy`, .25), 
+            Q3 = quantile(`Life expectancy`, .75), 
+            iqr = IQR(`Life expectancy`), 
+            sd = sd(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "Summary Statistics of Response Variable, Life Expectancy")
+```
+
+These summary statistics give a rough idea of the distribution of the response variable.
+The median life expectancy (~72 yrs) is almost 3 years larger than the mean (~69 yrs).
+Additionally, the median is closer to the third quartile than the first quartile. 
+This suggests that life expectancy may be left-skewed, which we will evaluate further 
+with visualizations.
+
+Because the dataset includes data collected each year for 15 years, we must consider
+possible time-dependence of life expectancy. This is an important relationship that
+will need to be addressed during model construction and statistical tests. For now,
+we can generate summary statistics at the beginning (year 2000) and the end (year 2015)
+to get a broad idea of how life expectancy varies over time. Naturally, we expect that
+life expectancy increases over time as global health and development generally improve.
+
+```{r summary-stats2, warning = FALSE}
+life_all %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  filter(Year == "2000") %>%
+  summarise(world_avg_2000 = mean(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2000 World Average Life Expectancy")
+
+life_all %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  filter(Year == "2000") %>%
+  summarise(world_median_2000 = median(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2000 World Median Life Expectancy")
+
+life_all %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  filter(Year == "2015") %>%
+  summarise(world_avg_2015 = mean(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2015 World Average Life Expectancy")
+
+life_all %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  filter(Year == "2015") %>%
+  summarise(world_median_2015 = median(`Life expectancy`)) %>%
+  kable(digits = 3, caption = "2015 World Median Life Expectancy")
+```
+
+We see that the mean life expectancy increased by more than 4 years between 2000 and 2015.
+The median also increased by almost 3 years over the same time period. This confirms
+the relationship we expected. Because life expectancy increases over time, we must be
+careful when generating our models. Without a proper consideration of time, it may 
+be a confounding variable between life expectancy and other predictors.
+
+Now, we will look at some summary visualizations of life expectancy.
+
+```{r summary-viz}
+p1 <- ggplot(data = life_all, mapping = aes(x = `Life expectancy`)) + 
+  geom_histogram() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "Count")
+
+p2 <- ggplot(data = life_all, mapping = aes(x = `Life expectancy`)) + 
+  geom_density() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "Proportion")
+
+p3 <- ggplot(data = life_all, mapping = aes(x = `Life expectancy`, y = "")) + 
+  geom_boxplot() + 
+  labs(title = "Distribution of Life Expectancy",
+       subtitle = "2000-2015",
+       x = "Life Expectancy (Years)",
+       y = "")
+
+(p1 + p2) / p3
+```
+
+Here we see that life expectancy is left skewed with a center just over 70 years.
+Life expectancy ranges from about 40 years to 90 years. 
 
 ## Methodology
 
