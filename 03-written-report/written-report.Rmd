@@ -12,9 +12,10 @@ knitr::opts_chunk$set(echo = FALSE,
 ```
 
 ```{r load-packages-data}
-# load packages and data
 library(tidyverse)
 library(here)
+library(rms)
+
 life <- read_csv(here("data", "life_expectancy.csv"))
 regions <- read_csv(here("data", "regions.csv"))
 ```
@@ -95,7 +96,7 @@ years <- rep(list(NA), 16)
 for(year in 2000:2015) {
   temp <- life %>%
     filter(Year == year) %>%
-    summarize(across(everything(), na_prop)) %>%
+    summarise(across(everything(), na_prop)) %>%
     pivot_longer(cols = everything(),
                  names_to = "variable",
                  values_to = "na_prop") %>%
@@ -152,7 +153,7 @@ We will only analyze life expectancy for the year 2011, because it offered the m
 ```{r summary-stats1, warning = FALSE}
 life %>%
   filter(!is.na(`Life expectancy`)) %>%
-  summarize(min = min(`Life expectancy`), 
+  summarise(min = min(`Life expectancy`), 
             max = max(`Life expectancy`),
             range = max - min,
             mean = mean(`Life expectancy`), 
@@ -200,18 +201,112 @@ p3 <- ggplot(data = life, mapping = aes(x = `Life expectancy`, y = "")) +
 Here we see that life expectancy is left skewed with a center just over 70 years.
 Life expectancy ranges from about 50 years to 90 years. 
 
+\newpage
+
 ## Methodology
+
+### Model Selection
 
 In this project we plan on using various regression analysis methods including, but not limited to, multiple linear regression, statistical inference, analysis of variance, and model selection in an attempt to understand country and region-level life expectancy, as well as the health, social, and economic relationships behind this number. 
 
 The response variable we will be using in this project is `Life expectancy`. This is a measure of the average age of death in a year for the given country during that year. In terms of regression model technique, we will be using multiple linear regression because our response variable is quantitative.
 
+The goal of our analysis is to calculate the most precise prediction of the response variable (life expectancy). To do this we will do backwards selection using AIC which means dropping variables one at a time that are deemed irrelevant based on AIC.
 
-```{r model-selection}
+```{r full-model}
+life <- life %>%
+  drop_na()
 
+full_model <- lm(`Life expectancy`~ Region + Status + `Adult Mortality` + `infant deaths`  
+                 + Alcohol + `percentage expenditure` + `Hepatitis B` + Measles +
+                   BMI + `under-five deaths` + Polio + `Total expenditure` + 
+                   Diphtheria + `HIV/AIDS`  + GDP + Population + `thinness  1-19 years`  +
+                   `thinness 5-9 years`  + `Income composition of resources` + 
+                   Schooling, data = life)
 
-
+tidy(full_model) %>%
+  kable(caption = "Full Model With All Possible Predictor Variables", digits = 3)
 ```
+
+```{r backward-aic, results = "hide"}
+backward_aic <- step(full_model, direction = "backward")
+backward_bic <- step(full_model, direction = "backward", k = log(nrow(life)))
+```
+
+```{r aic-bic models}
+tidy(backward_aic) %>%
+  kable(caption = "Backward Model Selection with AIC", digits = 3)
+
+tidy(backward_bic) %>%
+  kable(caption = "Backward Model Selection with BIC", digits = 3)
+```
+
+```{r model-comparison-adj-r-sq}
+glance(backward_aic) %>% select(adj.r.squared) #this will become the selected model
+glance(backward_bic) %>% select(adj.r.squared) 
+
+selected_model <- backward_aic
+```
+
+Based on adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in a higher adjusted $R^2$ which means that the model's predictor variables explain a higher proportion of the variation in the response (`Life expectancy`). 
+
+```{r r-sq}
+glance(selected_model) %>% select(r.squared)
+```
+
+93.03% of the variation in the `Life expectancy` is explained by the regression model containing `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+
+### Model Diagnostics
+
+```{r augment}
+selected_model_aug <- augment(selected_model)
+selected_model_aug <- selected_model_aug %>%
+  mutate(obs_num = 1:nrow(selected_model_aug))
+```
+
+```{r}
+ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point(alpha = 0.7) + 
+  geom_hline(yintercept = 0, color = "red") +
+  geom_hline(yintercept = -2,color = "black",linetype = "dotted") +
+  geom_hline(yintercept = 2,color = "black",linetype = "dotted") +
+  geom_hline(yintercept = -3, color = "red", linetype = "dotted") +
+  geom_hline(yintercept = 3, color = "red", linetype = "dotted") +
+  labs(x = "Predicted", y = "Standardized Residuals",
+       title = "Standardized Residuals vs. Predicted")
+```
+There are a few moderate outliers and two severe outliers. Will look into these later.
+
+```{r threshold}
+# (2(p+1))/n
+leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
+leverage_threshold
+```
+0.3230769 is the leverage threshold.
+
+
+
+```{r high-leverage-influencial}
+selected_model_aug %>%
+  filter(.hat > leverage_threshold) %>%
+  select(obs_num, .hat) 
+
+selected_model_aug %>%
+  filter(.cooksd > .5) %>%
+  select(obs_num, .cooksd) 
+```
+The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 15 observations have high leverage and 0 observations are influential.
+
+
+```{r multicollinearity}
+vif(selected_model) %>% 
+  tidy() %>% 
+  kable(digits = 3)
+```
+Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` also seems to have issues with multicollinearity but we probably need to look into this more since it's not clear which other variable it is correlated with.
+
+We should try models without either `infant deaths` and `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed.
+
 
 
 
