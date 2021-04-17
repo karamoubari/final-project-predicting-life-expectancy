@@ -320,13 +320,62 @@ The points in the first table are points with high leverage (.hat > leverage_thr
 vif(selected_model) %>% 
   tidy() %>% 
   kable(digits = 3)
+
+ggplot(data = life, aes(x = Schooling, 
+                        y = `Income composition of resources`)) +
+  geom_point()
 ```
-Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` also seems to have issues with multicollinearity but we probably need to look into this more since it's not clear which other variable it is correlated with. 
+Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`.
 
 We should try models without either `infant deaths` and `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed.
 
+```{r infant-five}
+ex_inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+               `Hepatitis B` + `Measles` + `under-five deaths` +
+               `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+               `Income composition of resources` + `Schooling`,
+             data = life)
 
+ex_five <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+                `infant deaths` + `Hepatitis B` + `Measles` + 
+                `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+                `Income composition of resources` + `Schooling`,
+             data = life)
 
+ex_inf %>%
+  glance() %>%
+  select(AIC, BIC, adj.r.squared)
+
+ex_five %>%
+  glance() %>%
+  select(AIC, BIC, adj.r.squared)
+```
+
+```{r income-schooling}
+ex_inc <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+               `infant deaths` + `Hepatitis B` + `Measles` + 
+               `Total expenditure` + `Diphtheria` + `HIV/AIDS` + 
+               `Schooling`,
+             data = life)
+
+ex_sch <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+               `infant deaths` + `Hepatitis B` + `Measles` + 
+               `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+               `Income composition of resources`,
+             data = life)
+
+ex_inc %>%
+  glance() %>%
+  select(AIC, BIC, adj.r.squared)
+
+ex_sch %>%
+  glance() %>%
+  select(AIC, BIC, adj.r.squared)
+
+final_model <- ex_sch
+```
+
+When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$. Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
 ## Results
 
