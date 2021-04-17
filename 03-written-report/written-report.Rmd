@@ -217,20 +217,30 @@ The goal of our analysis is to calculate the most precise prediction of the resp
 life <- life %>%
   drop_na()
 
-full_model <- lm(`Life expectancy`~ Region + Status + `Adult Mortality` + `infant deaths`  
-                 + Alcohol + `percentage expenditure` + `Hepatitis B` + Measles +
-                   BMI + `under-five deaths` + Polio + `Total expenditure` + 
-                   Diphtheria + `HIV/AIDS`  + GDP + Population + `thinness  1-19 years`  +
-                   `thinness 5-9 years`  + `Income composition of resources` + 
+full_model <- lm(`Life expectancy` ~ Region + Status + `Adult Mortality` + 
+                   `infant deaths` + Alcohol + `percentage expenditure` + 
+                   `Hepatitis B` + Measles + BMI + `under-five deaths` + 
+                   Polio + `Total expenditure` + Diphtheria + `HIV/AIDS` + 
+                   GDP + Population + `thinness  1-19 years` + 
+                   `thinness 5-9 years` + `Income composition of resources` + 
                    Schooling, data = life)
 
+int_model <- lm(`Life expectancy` ~ 1, data = life)
+
 tidy(full_model) %>%
-  kable(caption = "Full Model With All Possible Predictor Variables", digits = 3)
+  kable(caption = "Full Model With All Possible Predictor Variables", 
+        digits = 3)
 ```
 
-```{r backward-aic, results = "hide"}
+```{r model-selection, results = "hide"}
+# Backward
 backward_aic <- step(full_model, direction = "backward")
 backward_bic <- step(full_model, direction = "backward", k = log(nrow(life)))
+
+# Forward
+forward_aic <- step(int_model, formula(full_model), direction = "forward")
+forward_bic <- step(int_model, formula(full_model), 
+                    direction = "forward", k = log(nrow(life)))
 ```
 
 ```{r aic-bic models}
@@ -239,11 +249,19 @@ tidy(backward_aic) %>%
 
 tidy(backward_bic) %>%
   kable(caption = "Backward Model Selection with BIC", digits = 3)
+
+tidy(forward_aic) %>%
+  kable(caption = "Forward Model Selection with AIC", digits = 3)
+
+tidy(forward_bic) %>%
+  kable(caption = "Forward Model Selection with BIC", digits = 3)
 ```
 
 ```{r model-comparison-adj-r-sq}
 glance(backward_aic) %>% select(adj.r.squared) #this will become the selected model
 glance(backward_bic) %>% select(adj.r.squared) 
+glance(forward_aic) %>% select(adj.r.squared)
+glance(forward_bic) %>% select(adj.r.squared)
 
 selected_model <- backward_aic
 ```
@@ -303,7 +321,7 @@ vif(selected_model) %>%
   tidy() %>% 
   kable(digits = 3)
 ```
-Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` also seems to have issues with multicollinearity but we probably need to look into this more since it's not clear which other variable it is correlated with.
+Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` also seems to have issues with multicollinearity but we probably need to look into this more since it's not clear which other variable it is correlated with. 
 
 We should try models without either `infant deaths` and `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed.
 
