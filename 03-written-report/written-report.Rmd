@@ -35,7 +35,9 @@ initial_join <- life %>%
   filter(is.na(Region)) %>%
   select(Country) %>%
   pull())
-# Montenegro, Niue, and South Sudan do not appear in 'regions'
+# Montenegro, Niue, and South Sudan do not appear in 'regions'.
+# Alternate names of Cabo Verde, Czechia, and 
+# Timor-Leste were obtained through Google.
 regions <- regions %>%
   mutate(
     Country = case_when(
@@ -60,7 +62,8 @@ regions <- regions %>%
       Country == "Syria" ~ "Syrian Arab Republic",
       Country == "Macedonia" ~ "The former Yugoslav republic of Macedonia",
       Country == "East Timor" ~ "Timor-Leste",
-      Country == "United Kingdom" ~ "United Kingdom of Great Britain and Northern Ireland",
+      Country == "United Kingdom" ~ 
+        "United Kingdom of Great Britain and Northern Ireland",
       Country == "Tanzania" ~ "United Republic of Tanzania",
       Country == "United States" ~ "United States of America",
       Country == "Venezuela" ~ "Venezuela (Bolivarian Republic of)",
@@ -71,7 +74,10 @@ regions <- regions %>%
 life <- life %>%
   left_join(regions, by = "Country") %>%
   select(Country, Region, Year:Schooling)
+# The regions of Montenegro, Niue, and South Sudan 
+# were identified/confirmed through Google.
 life$Region[life$Country == "Montenegro"] <- "EASTERN EUROPE"
+# https://en.wikipedia.org/wiki/Category:Countries_in_Oceania
 life$Region[life$Country == "Niue"] <- "OCEANIA"
 life$Region[life$Country == "South Sudan"] <- "SUB-SAHARAN AFRICA"
 rm(initial_join)
@@ -121,24 +127,22 @@ By telling us the average age of death in a population, life expectancy is a key
 
 In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, looking at various health-related and non-health-related factors that connect to life expectancy.
 
-In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing". We also predict that, on average, life expectancy will have increased internationally in the 15 years that are documented in the data set.
+In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
-Our selected data set is comprised of information that others gleaned from the websites of the World Health Organization and the United Nations. Every entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015. Additional information can be found on https://www.kaggle.com/kumarajarshi/life-expectancy-who.
-
-We also combined this data set with another data set downloaded from https://www.kaggle.com/fernandol/countries-of-the-world. 
+Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4]
 
 \newpage
 
 ## Exploratory Data Analysis
 
-First, we will look at some summary statistics of our response variable, 'Life expectancy'.
-Though it is possible to analyze the entire dataset over all years, this creates difficulties 
+First, we will look at some summary statistics of our response variable, `Life expectancy`.
+Though it is possible to analyze the entire data set over all years, this creates difficulties 
 with creating models. As one might expect, the average global life expectancy increased from
 2000 to 2015. This relationship might make it unclear whether a rise in life expectancy is explained
 by our predictor variables or if it is simply due to human development over time. As a result, we 
 will only use data from one year to perform our analysis.
 
-We will only analyze life expectancy for the year 2011, because it offered the most complete data (the most data without missing values).
+We will only analyze life expectancy for the year 2011, because it is the latest year among those years in which no variable has a missing rate greater than 22%.
 
 ```{r summary-stats1, warning = FALSE}
 life %>%
@@ -212,7 +216,10 @@ life_map <- left_join(map, map_data, by = c("region" = "Country"))
 
 ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
   coord_fixed(1) +
-  geom_polygon(aes(fill = as.numeric(`Life expectancy`)), color = "black") +
+  geom_polygon(
+    # color = "black",
+    aes(fill = as.numeric(`Life expectancy`))
+  ) +
   scale_fill_gradient(low = "red", high = "green", 
                       name = "2011 Life Expectancy in Years") +
   labs(title = "2011 Life Expectancy Across The World", 
@@ -222,7 +229,6 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 ```
 
 Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is much higher in North and South American countries when compared to African countries.
-
 
 \newpage
 
@@ -388,4 +394,6 @@ When comparing two models that are identical except that one includes `under-fiv
 ## Sources
 
 [1] https://ourworldindata.org/life-expectancy \newline
-[2] https://europepmc.org/article/med/12785422/reload=0#impact
+[2] https://europepmc.org/article/med/12785422/reload=0#impact \newline
+[3] https://www.kaggle.com/kumarajarshi/life-expectancy-who. \newline
+[4] https://www.kaggle.com/fernandol/countries-of-the-world
