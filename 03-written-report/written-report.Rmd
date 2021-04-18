@@ -200,7 +200,6 @@ world <- ne_countries(scale = "medium", returnclass = "sf")
 
 map_data <- life %>%
   mutate(Country = case_when(
-         #adds US+Russia to map by renaming, can add more missing countries
          Country == "United States of America" ~ "USA", 
          Country == "Russian Federation" ~ "Russia", 
          TRUE ~ Country)) %>%
@@ -213,13 +212,14 @@ life_map <- left_join(map, map_data, by = c("region" = "Country"))
 ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
   coord_fixed(1) +
   geom_polygon(aes(fill = as.numeric(`Life expectancy`)), color = "black") +
-  scale_fill_gradient(low = "tomato", high = "seagreen1", 
-                      name = "2011 Life Expectancy") +
+  scale_fill_gradient(low = "red", high = "green", 
+                      name = "2011 Life Expectancy in Years") +
   labs(title = "2011 Life Expectancy Across The World", 
        x = "Longitude", y = "Latitude")
 
 #https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 ```
+Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is much higher in North and South American countries when compared to African countries.
 
 
 \newpage
