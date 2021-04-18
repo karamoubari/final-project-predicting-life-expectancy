@@ -3,6 +3,7 @@ title: "Your project title"
 author: 'Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo'
 date: "`r Sys.Date()`"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
@@ -219,6 +220,7 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 
 #https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 ```
+
 Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is much higher in North and South American countries when compared to African countries.
 
 
