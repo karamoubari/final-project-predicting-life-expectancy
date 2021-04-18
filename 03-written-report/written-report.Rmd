@@ -1,8 +1,10 @@
 ---
 title: "Your project title"
-author: "Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo"
+author: 'Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo'
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -15,7 +17,6 @@ knitr::opts_chunk$set(echo = FALSE,
 library(tidyverse)
 library(here)
 library(rms)
-
 life <- read_csv(here("data", "life_expectancy.csv"))
 regions <- read_csv(here("data", "regions.csv"))
 ```
@@ -24,18 +25,15 @@ regions <- read_csv(here("data", "regions.csv"))
 regions <- regions %>%
   select(Country, Region) %>%
   mutate(Country = gsub("&", "and", Country))
-
 initial_join <- life %>%
   left_join(regions, by = "Country") %>%
   select(Country, Region, Year:Schooling)
-
 (na_countries <- initial_join %>%
   select(Country, Region) %>%
   distinct() %>%
   filter(is.na(Region)) %>%
   select(Country) %>%
   pull())
-
 # Montenegro, Niue, and South Sudan do not appear in 'regions'
 regions <- regions %>%
   mutate(
@@ -69,19 +67,15 @@ regions <- regions %>%
       TRUE ~ Country
     )
   )
-
 life <- life %>%
   left_join(regions, by = "Country") %>%
   select(Country, Region, Year:Schooling)
-
 life$Region[life$Country == "Montenegro"] <- "EASTERN EUROPE"
 life$Region[life$Country == "Niue"] <- "OCEANIA"
 life$Region[life$Country == "South Sudan"] <- "SUB-SAHARAN AFRICA"
-
 rm(initial_join)
 rm(na_countries)
 rm(regions)
-
 ```
 
 ```{r filter-year, include=FALSE}
@@ -91,7 +85,6 @@ na_prop <- function(x) {
     sum() %>%
     prod(1 / n()) 
 }
-
 years <- rep(list(NA), 16)
 for(year in 2000:2015) {
   temp <- life %>%
@@ -105,17 +98,13 @@ for(year in 2000:2015) {
   years[[year - 1999]] <- temp
 }
 names(years) <- 2000:2015
-
 # 2011 is the latest year where no variable 
 # has a missing rate greater than 0.22.
 map_dbl(years, ~ any(`>`(., 0.22)))
-
 # All the years where no variable has a missing rate greater 
 # than 0.22 has a 'population' missing rate of 0.2185792.
 map(years, ~ .[`>`(., 0.20)])
-
 life <- filter(life, Year == 2011)
-
 # Remove unnecessary objects
 rm(na_prop)
 rm(years)
@@ -174,32 +163,64 @@ with visualizations.
 Now, we will look at some summary visualizations of life expectancy.
 
 ```{r summary-viz}
+view(life)
+
 p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_histogram() + 
   labs(title = "Distribution of Life Expectancy",
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "Count")
-
 p2 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_density() + 
   labs(title = "Distribution of Life Expectancy",
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "Proportion")
-
 p3 <- ggplot(data = life, mapping = aes(x = `Life expectancy`, y = "")) + 
   geom_boxplot() + 
   labs(title = "Distribution of Life Expectancy",
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "")
-
 (p1 + p2) / p3
 ```
 
 Here we see that life expectancy is left skewed with a center just over 70 years.
 Life expectancy ranges from about 50 years to 90 years. 
+
+```{r world map}
+library(ggplot2)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rgeos)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+map_data <- life %>%
+  mutate(Country = case_when(
+         #adds US+Russia to map by renaming, can add more missing countries
+         Country == "United States of America" ~ "USA", 
+         Country == "Russian Federation" ~ "Russia", 
+         TRUE ~ Country)) %>%
+  select(Country, `Life expectancy`)
+
+map <- map_data("world")
+
+life_map <- left_join(map, map_data, by = c("region" = "Country"))
+
+ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
+  coord_fixed(1) +
+  geom_polygon(aes(fill = as.numeric(`Life expectancy`)), color = "black") +
+  scale_fill_gradient(low = "tomato", high = "seagreen1", 
+                      name = "2011 Life Expectancy") +
+  labs(title = "2011 Life Expectancy Across The World", 
+       x = "Longitude", y = "Latitude")
+
+#https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
+```
+
 
 \newpage
 
@@ -216,7 +237,6 @@ The goal of our analysis is to calculate the most precise prediction of the resp
 ```{r full-model}
 life <- life %>%
   drop_na()
-
 full_model <- lm(`Life expectancy` ~ Region + Status + `Adult Mortality` + 
                    `infant deaths` + Alcohol + `percentage expenditure` + 
                    `Hepatitis B` + Measles + BMI + `under-five deaths` + 
@@ -224,9 +244,7 @@ full_model <- lm(`Life expectancy` ~ Region + Status + `Adult Mortality` +
                    GDP + Population + `thinness  1-19 years` + 
                    `thinness 5-9 years` + `Income composition of resources` + 
                    Schooling, data = life)
-
 int_model <- lm(`Life expectancy` ~ 1, data = life)
-
 tidy(full_model) %>%
   kable(caption = "Full Model With All Possible Predictor Variables", 
         digits = 3)
@@ -236,7 +254,6 @@ tidy(full_model) %>%
 # Backward
 backward_aic <- step(full_model, direction = "backward")
 backward_bic <- step(full_model, direction = "backward", k = log(nrow(life)))
-
 # Forward
 forward_aic <- step(int_model, formula(full_model), direction = "forward")
 forward_bic <- step(int_model, formula(full_model), 
@@ -246,13 +263,10 @@ forward_bic <- step(int_model, formula(full_model),
 ```{r aic-bic models}
 tidy(backward_aic) %>%
   kable(caption = "Backward Model Selection with AIC", digits = 3)
-
 tidy(backward_bic) %>%
   kable(caption = "Backward Model Selection with BIC", digits = 3)
-
 tidy(forward_aic) %>%
   kable(caption = "Forward Model Selection with AIC", digits = 3)
-
 tidy(forward_bic) %>%
   kable(caption = "Forward Model Selection with BIC", digits = 3)
 ```
@@ -262,7 +276,6 @@ glance(backward_aic) %>% select(adj.r.squared) #this will become the selected mo
 glance(backward_bic) %>% select(adj.r.squared) 
 glance(forward_aic) %>% select(adj.r.squared)
 glance(forward_bic) %>% select(adj.r.squared)
-
 selected_model <- backward_aic
 ```
 
@@ -308,7 +321,6 @@ leverage_threshold
 selected_model_aug %>%
   filter(.hat > leverage_threshold) %>%
   select(obs_num, .hat) 
-
 selected_model_aug %>%
   filter(.cooksd > .5) %>%
   select(obs_num, .cooksd) 
@@ -320,7 +332,6 @@ The points in the first table are points with high leverage (.hat > leverage_thr
 vif(selected_model) %>% 
   tidy() %>% 
   kable(digits = 3)
-
 ggplot(data = life, aes(x = Schooling, 
                         y = `Income composition of resources`)) +
   geom_point()
@@ -335,17 +346,14 @@ ex_inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
                `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
                `Income composition of resources` + `Schooling`,
              data = life)
-
 ex_five <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
                 `infant deaths` + `Hepatitis B` + `Measles` + 
                 `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
                 `Income composition of resources` + `Schooling`,
              data = life)
-
 ex_inf %>%
   glance() %>%
   select(AIC, BIC, adj.r.squared)
-
 ex_five %>%
   glance() %>%
   select(AIC, BIC, adj.r.squared)
@@ -357,21 +365,17 @@ ex_inc <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
                `Total expenditure` + `Diphtheria` + `HIV/AIDS` + 
                `Schooling`,
              data = life)
-
 ex_sch <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
                `infant deaths` + `Hepatitis B` + `Measles` + 
                `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
                `Income composition of resources`,
              data = life)
-
 ex_inc %>%
   glance() %>%
   select(AIC, BIC, adj.r.squared)
-
 ex_sch %>%
   glance() %>%
   select(AIC, BIC, adj.r.squared)
-
 final_model <- ex_sch
 ```
 
