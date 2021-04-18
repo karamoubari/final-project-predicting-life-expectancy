@@ -318,7 +318,13 @@ Based on AIC and adjusted $R^2$, we prefer the model we found through backward s
 glance(selected_model) %>% select(r.squared)
 ```
 
-93.03% of the variation in the `Life expectancy` is explained by the regression model containing `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+```{r selected-model}
+kable(tidy(selected_model),
+      caption = "Selected Model",
+      digits = 3)
+```
+
+93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
 
 ### Model Diagnostics
 
