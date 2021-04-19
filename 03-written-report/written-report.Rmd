@@ -240,7 +240,7 @@ The response variable we will be using in this project is `Life expectancy`. Thi
 
 The goal of our analysis is to calculate the most precise prediction of the response variable (life expectancy). To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criteria while backward selection means dropping variables one at a time that are deemed irrelevant based on AIC or BIC.
 
-```{r full-model, results = "hide"}
+```{r full-model}
 life <- life %>%
   drop_na()
 full_model <- lm(`Life expectancy` ~ Region + Status + `Adult Mortality` + 
@@ -266,7 +266,7 @@ forward_bic <- step(int_model, formula(full_model),
                     direction = "forward", k = log(nrow(life)))
 ```
 
-```{r disp-models, results = "hide"}
+```{r disp-models}
 tidy(backward_aic) %>%
   kable(caption = "Backward Model Selection with AIC", digits = 3)
 tidy(backward_bic) %>%
@@ -312,7 +312,7 @@ selected_model <- backward_aic
 
 Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ which means that the model's predictor variables explain the highest proportion of the variation in the response (`Life expectancy`) out of all four models. Moreover, this model is the only model of the four that is superior to the other models in more than one metric. 
 
-```{r r-sq, results = "hide"}
+```{r r-sq}
 glance(selected_model) %>% select(r.squared)
 ```
 
