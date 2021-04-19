@@ -168,8 +168,6 @@ with visualizations.
 Now, we will look at some summary visualizations of life expectancy.
 
 ```{r summary-viz}
-view(life)
-
 p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_histogram() + 
   labs(title = "Distribution of Life Expectancy",
@@ -420,7 +418,18 @@ final_model <- ex_sch
 
 When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$. Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
-### Conditions
+### Model Conditions/Assumptions
+
+```{r normality-viz}
+(resid_hist <- final_model %>%
+  augment() %>%
+  ggplot(aes(x = .std.resid)) +
+  geom_histogram() +
+  labs(title = "Distribution of Residuals",
+       subtitle = "Final Model",
+       x = "Residual",
+       y = "Count"))
+```
 
 ## Results
 
