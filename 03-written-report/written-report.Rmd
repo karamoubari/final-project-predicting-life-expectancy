@@ -313,7 +313,11 @@ selected_model <- backward_aic
 Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ which means that the model's predictor variables explain the highest proportion of the variation in the response (`Life expectancy`) out of all four models. Moreover, this model is the only model of the four that is superior to the other models in more than one metric. 
 
 ```{r r-sq}
-glance(selected_model) %>% select(r.squared)
+rsq <- glance(selected_model) %>% 
+        select(r.squared)
+
+kable(rsq, align = "l")
+
 ```
 
 ```{r selected-model}
@@ -323,6 +327,31 @@ kable(tidy(selected_model),
 ```
 
 93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+
+*Definitions of Key Predictor Variables:*
+
+Region: Area, subcontinent, or continent where a country is located
+
+Adult Mortality: Probability of dying between 15 and 60 years per 1000 population
+
+Infant Deaths: Number of infant deaths per 1000 population
+
+Hepatitis B: Percentage of hepatitis B immunization coverage among 1-year-olds
+
+Measles: Number of reported measles cases per 1000 population
+
+Under-Five Deaths: Number of under-five deaths per 1000 population
+
+Total Expenditure: General government expenditure on health as a percentage of total government expenditure
+
+Diphtheria: Percentage of DTP3 immunization coverage among 1-year-olds
+
+HIV/AIDS: Deaths per 1000 live births HIV/AIDS (0-4 years)
+
+Income composition of resources: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
+
+Schooling: Average years of schooling/education
+
 
 ### Model Diagnostics
 
@@ -343,14 +372,16 @@ ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
   labs(x = "Predicted", y = "Standardized Residuals",
        title = "Standardized Residuals vs. Predicted")
 ```
+
 There are a few moderate outliers and two severe outliers. Will look into these later.
 
 ```{r threshold}
 # (2(p+1))/n
 leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
-leverage_threshold
+kable(leverage_threshold,
+      caption = "Leverage Threshold:",
+      align = "l")
 ```
-0.3230769 is the leverage threshold.
 
 
 
@@ -435,7 +466,10 @@ When comparing two models that are identical except that one includes `under-fiv
 
 ## Sources
 
-[1] https://ourworldindata.org/life-expectancy \newline
-[2] https://europepmc.org/article/med/12785422/reload=0#impact \newline
-[3] https://www.kaggle.com/kumarajarshi/life-expectancy-who. \newline
+[1] https://ourworldindata.org/life-expectancy 
+
+[2] https://europepmc.org/article/med/12785422/reload=0#impact 
+
+[3] https://www.kaggle.com/kumarajarshi/life-expectancy-who. 
+
 [4] https://www.kaggle.com/fernandol/countries-of-the-world
