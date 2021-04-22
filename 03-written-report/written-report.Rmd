@@ -129,7 +129,7 @@ In addition to the more obvious health-related connections to life expectancy, n
 
 In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
-Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4]
+Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data sets came from Kaggle. 
 
 \newpage
 
