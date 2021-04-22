@@ -133,6 +133,30 @@ Our primary data set is comprised of information that had been gleaned from the 
 
 \newpage
 
+*Definitions of Key Predictor Variables:*
+
+Region: Area, subcontinent, or continent where a country is located
+
+Adult Mortality: Probability of dying between 15 and 60 years per 1000 population
+
+Infant Deaths: Number of infant deaths per 1000 population
+
+Hepatitis B: Percentage of hepatitis B immunization coverage among 1-year-olds
+
+Measles: Number of reported measles cases per 1000 population
+
+Under-Five Deaths: Number of under-five deaths per 1000 population
+
+Total Expenditure: General government expenditure on health as a percentage of total government expenditure
+
+Diphtheria: Percentage of DTP3 immunization coverage among 1-year-olds
+
+HIV/AIDS: Deaths per 1000 live births HIV/AIDS (0-4 years)
+
+Income composition of resources: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
+
+Schooling: Average years of schooling/education
+
 ## Exploratory Data Analysis
 
 First, we will look at some summary statistics of our response variable, `Life expectancy`.
@@ -230,6 +254,19 @@ Here we can see the differences in life expectancy across the world. For example
 
 \newpage
 
+```{r}
+infant_five <- ggplot(data = life, aes(x = `infant deaths`, 
+                                       y = `under-five deaths`)) +
+  geom_point() +
+  labs(x = "Infant deaths",
+       y = "Under-five deaths")
+schooling_income <- ggplot(data = life, 
+                           aes(x = Schooling, 
+                               y = `Income composition of resources`)) +
+  geom_point()
+infant_five + schooling_income
+```
+
 ## Methodology
 
 ### Model Selection
@@ -250,9 +287,6 @@ full_model <- lm(`Life expectancy` ~ Region + Status + `Adult Mortality` +
                    GDP + Population + `thinness  1-19 years` + 
                    `thinness 5-9 years` + `Income composition of resources` + 
                    Schooling, data = life)
-tidy(full_model) %>%
-  kable(caption = "Full Model With All Possible Predictor Variables", 
-        digits = 3)
 ```
 
 ```{r model-selection, results = "hide"}
@@ -264,17 +298,6 @@ int_model <- lm(`Life expectancy` ~ 1, data = life)
 forward_aic <- step(int_model, formula(full_model), direction = "forward")
 forward_bic <- step(int_model, formula(full_model), 
                     direction = "forward", k = log(nrow(life)))
-```
-
-```{r disp-models}
-tidy(backward_aic) %>%
-  kable(caption = "Backward Model Selection with AIC", digits = 3)
-tidy(backward_bic) %>%
-  kable(caption = "Backward Model Selection with BIC", digits = 3)
-tidy(forward_aic) %>%
-  kable(caption = "Forward Model Selection with AIC", digits = 3)
-tidy(forward_bic) %>%
-  kable(caption = "Forward Model Selection with BIC", digits = 3)
 ```
 
 ```{r model-comparison}
@@ -312,97 +335,12 @@ selected_model <- backward_aic
 
 Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ which means that the model's predictor variables explain the highest proportion of the variation in the response (`Life expectancy`) out of all four models. Moreover, this model is the only model of the four that is superior to the other models in more than one metric. 
 
-```{r r-sq}
-rsq <- glance(selected_model) %>% 
-        select(r.squared)
-
-kable(rsq, align = "l")
-
-```
-
-```{r selected-model}
-kable(tidy(selected_model),
-      caption = "Selected Model",
-      digits = 3)
-```
-
-93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
-
-*Definitions of Key Predictor Variables:*
-
-Region: Area, subcontinent, or continent where a country is located
-
-Adult Mortality: Probability of dying between 15 and 60 years per 1000 population
-
-Infant Deaths: Number of infant deaths per 1000 population
-
-Hepatitis B: Percentage of hepatitis B immunization coverage among 1-year-olds
-
-Measles: Number of reported measles cases per 1000 population
-
-Under-Five Deaths: Number of under-five deaths per 1000 population
-
-Total Expenditure: General government expenditure on health as a percentage of total government expenditure
-
-Diphtheria: Percentage of DTP3 immunization coverage among 1-year-olds
-
-HIV/AIDS: Deaths per 1000 live births HIV/AIDS (0-4 years)
-
-Income composition of resources: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
-
-Schooling: Average years of schooling/education
-
-
-### Model Diagnostics
-
-```{r augment}
-selected_model_aug <- augment(selected_model)
-selected_model_aug <- selected_model_aug %>%
-  mutate(obs_num = 1:nrow(selected_model_aug))
-```
-
-```{r}
-ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
-  geom_point(alpha = 0.7) + 
-  geom_hline(yintercept = 0, color = "red") +
-  geom_hline(yintercept = -2,color = "black",linetype = "dotted") +
-  geom_hline(yintercept = 2,color = "black",linetype = "dotted") +
-  geom_hline(yintercept = -3, color = "red", linetype = "dotted") +
-  geom_hline(yintercept = 3, color = "red", linetype = "dotted") +
-  labs(x = "Predicted", y = "Standardized Residuals",
-       title = "Standardized Residuals vs. Predicted")
-```
-
-There are a few moderate outliers and two severe outliers. Will look into these later.
-
-```{r threshold}
-# (2(p+1))/n
-leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
-kable(leverage_threshold,
-      caption = "Leverage Threshold:",
-      align = "l")
-```
-
-
-
-```{r high-leverage-influencial}
-selected_model_aug %>%
-  filter(.hat > leverage_threshold) %>%
-  select(obs_num, .hat) 
-selected_model_aug %>%
-  filter(.cooksd > .5) %>%
-  select(obs_num, .cooksd) 
-```
-The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 15 observations have high leverage and 0 observations are influential.
-
+### Multicollinearity
 
 ```{r multicollinearity}
 vif(selected_model) %>% 
   tidy() %>% 
   kable(digits = 3)
-ggplot(data = life, aes(x = Schooling, 
-                        y = `Income composition of resources`)) +
-  geom_point()
 ```
 Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`.
 
@@ -449,6 +387,46 @@ final_model <- ex_sch
 
 When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$. Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
+### Model Diagnostics
+
+```{r augment}
+selected_model_aug <- augment(selected_model)
+selected_model_aug <- selected_model_aug %>%
+  mutate(obs_num = 1:nrow(selected_model_aug))
+```
+
+```{r}
+ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
+  geom_point(alpha = 0.7) + 
+  geom_hline(yintercept = 0, color = "red") +
+  geom_hline(yintercept = -2,color = "black",linetype = "dotted") +
+  geom_hline(yintercept = 2,color = "black",linetype = "dotted") +
+  geom_hline(yintercept = -3, color = "red", linetype = "dotted") +
+  geom_hline(yintercept = 3, color = "red", linetype = "dotted") +
+  labs(x = "Predicted", y = "Standardized Residuals",
+       title = "Standardized Residuals vs. Predicted")
+```
+
+There are a few moderate outliers and two severe outliers. Will look into these later.
+
+```{r threshold}
+# (2(p+1))/n
+leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
+kable(leverage_threshold,
+      caption = "Leverage Threshold:",
+      align = "l")
+```
+
+```{r high-leverage-influencial}
+selected_model_aug %>%
+  filter(.hat > leverage_threshold) %>%
+  select(obs_num, .hat) 
+selected_model_aug %>%
+  filter(.cooksd > .5) %>%
+  select(obs_num, .cooksd) 
+```
+The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 15 observations have high leverage and 0 observations are influential.
+
 ### Model Conditions/Assumptions
 
 ```{r normality-viz}
@@ -463,6 +441,22 @@ When comparing two models that are identical except that one includes `under-fiv
 ```
 
 ## Results
+
+```{r selected-model}
+kable(tidy(selected_model),
+      caption = "Selected Model",
+      digits = 3)
+```
+
+93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+
+## Appendix
+
+```{r disp-full-model}
+tidy(full_model) %>%
+  kable(caption = "Full Model With All Possible Predictor Variables", 
+        digits = 3)
+```
 
 ## Sources
 
