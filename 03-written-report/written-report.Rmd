@@ -343,7 +343,7 @@ Based on AIC and adjusted $R^2$, we prefer the model we found through backward s
 vif(selected_model) %>% 
   tidy() %>% 
   rename(Variable = names, VIF = x) %>%
-  kable(digits = 3, caption = "Predictor Variable VIFs")
+  kable(caption = "Predictor Variable VIFs", digits = 3)
 ```
 Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`. These two relationships were visualized in the EDA. 
 
@@ -372,6 +372,8 @@ model_with("Infant Deaths", five) %>%
         digits = 3)
 ```
 
+When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$.
+
 ```{r income-schooling}
 sch <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
             `infant deaths` + `Hepatitis B` + `Measles` + 
@@ -388,7 +390,7 @@ model_with("Schooling", sch) %>%
 selected_model <- inc
 ```
 
-When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$. Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
+Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
 ### Model Conditions and Diagnostics
 
@@ -417,7 +419,7 @@ resid_hist + resid_qq
 
 Judging from the histogram and QQ plot above, the standardized residuals appear to be normally distributed, thus fulfilling the normality condition. 
 
-```{r}
+```{r residual-plot}
 ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
   geom_point(alpha = 0.7) + 
   geom_hline(yintercept = 0, color = "red") +
@@ -427,9 +429,32 @@ ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
   geom_hline(yintercept = 3, color = "red", linetype = "dotted") +
   labs(x = "Predicted", y = "Standardized Residuals",
        title = "Standardized Residuals vs. Predicted")
+selected_model_aug %>%
+  filter(.std.resid > 2 | .std.resid < -2) %>%
+  left_join(life) %>%
+  select(Country, `Standardized Residual` = .std.resid) %>%
+  kable(caption = "Life Expectancy Outliers", digits = 3)
 ```
 
-The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, there are a few moderate outliers and two severe outliers. Will look into these later.
+The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Iraq has a higher life expectancy than what we expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have lower values for life expectancy than what was predicted. 
+
+```{r linearity-viz, fig.height = 10, fig.width = 8}
+# https://www.youtube.com/watch?v=nqI5CmdUYRQ
+plot_predictor <- function(variable) {
+  ggplot(data = selected_model_aug, 
+         aes(x = .data[[variable]], 
+             y = .std.resid)) +
+    geom_point() +
+    labs(x = variable,
+         y = "Standardized Residual")
+}
+plots <- map(names(selected_model_aug)[3:10], plot_predictor)
+title <- plot_annotation("Checking Linearity")
+(plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]]) /
+  (plots[[5]] + plots[[6]] + plots[[7]] + plots[[8]]) + title
+```
+
+The standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
 
 ```{r threshold}
 # (2(p+1))/n
@@ -439,15 +464,24 @@ leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
 #       align = "l")
 ```
 
-```{r high-leverage-influencial}
+```{r high-leverage}
 selected_model_aug %>%
   filter(.hat > leverage_threshold) %>%
-  select(obs_num, .hat) 
+  left_join(life) %>%
+  select(Country, Leverage = .hat) %>%
+  kable(caption = "Predictor Variable Outliers", digits = 3)
+```
+
+```{r influential, results = "hide"}
 selected_model_aug %>%
   filter(.cooksd > .5) %>%
-  select(obs_num, .cooksd) 
+  left_join(life) %>%
+  select(Country, .cooksd) 
 ```
-The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 15 observations have high leverage and 0 observations are influential.
+
+12 countries, shown in the table above, have high leverage but none are influential.
+
+The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 
 
 ## Results
 
