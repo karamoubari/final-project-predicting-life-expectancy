@@ -254,17 +254,19 @@ Here we can see the differences in life expectancy across the world. For example
 
 \newpage
 
-```{r}
+```{r correlated-predictors, fig.height = 3, fig.width = 8}
 infant_five <- ggplot(data = life, aes(x = `infant deaths`, 
                                        y = `under-five deaths`)) +
   geom_point() +
-  labs(x = "Infant deaths",
-       y = "Under-five deaths")
+  labs(x = "Infant Deaths",
+       y = "Under-five Deaths")
 schooling_income <- ggplot(data = life, 
                            aes(x = Schooling, 
                                y = `Income composition of resources`)) +
-  geom_point()
-infant_five + schooling_income
+  geom_point() +
+  labs(y = "Income Composition of Resources")
+title <- plot_annotation("Correlated Predictors")
+infant_five + schooling_income + title
 ```
 
 ## Methodology
@@ -320,7 +322,7 @@ for(i in 1:length(models)) {
   out <- rbind(out, temp)
 }
 
-kable(out[-1, ], caption = "Potential models", digits = 3)
+kable(out[-1, ], caption = "Potential Models", digits = 3)
 
 # glance(backward_aic) %>% 
 #   select(AIC, BIC, adj.r.squared) #this will become the selected model
@@ -340,60 +342,80 @@ Based on AIC and adjusted $R^2$, we prefer the model we found through backward s
 ```{r multicollinearity}
 vif(selected_model) %>% 
   tidy() %>% 
-  kable(digits = 3)
+  rename(Variable = names, VIF = x) %>%
+  kable(digits = 3, caption = "Predictor Variable VIFs")
 ```
-Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`.
+Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`. These two relationships were visualized in the EDA. 
 
-We should try models without either `infant deaths` and `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed.
+We should try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we ought to compare models with only `Income composition of resources` or `Schooling` and decide which variable to keep. 
 
 ```{r infant-five}
-ex_inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
-               `Hepatitis B` + `Measles` + `under-five deaths` +
-               `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
-               `Income composition of resources` + `Schooling`,
-             data = life)
-ex_five <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
-                `infant deaths` + `Hepatitis B` + `Measles` + 
-                `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
-                `Income composition of resources` + `Schooling`,
-             data = life)
-ex_inf %>%
-  glance() %>%
-  select(AIC, BIC, adj.r.squared)
-ex_five %>%
-  glance() %>%
-  select(AIC, BIC, adj.r.squared)
+inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+            `infant deaths` + `Hepatitis B` + `Measles` + 
+            `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+            `Income composition of resources` + `Schooling`,
+          data = life)
+five <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+             `Hepatitis B` + `Measles` + `under-five deaths` +
+             `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+             `Income composition of resources` + `Schooling`,
+           data = life)
+model_with <- function(variable, model) {
+  model %>%
+    glance() %>%
+    select(AIC, BIC, adj.r.squared) %>%
+    mutate(`Included Variable` = variable, .before = AIC)
+}
+model_with("Infant Deaths", five) %>%
+  rbind(model_with("Under-five Deaths", inf)) %>%
+  kable(caption = "Infant Deaths vs. Under-five Deaths",
+        digits = 3)
 ```
 
 ```{r income-schooling}
-ex_inc <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
-               `infant deaths` + `Hepatitis B` + `Measles` + 
-               `Total expenditure` + `Diphtheria` + `HIV/AIDS` + 
-               `Schooling`,
-             data = life)
-ex_sch <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
-               `infant deaths` + `Hepatitis B` + `Measles` + 
-               `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
-               `Income composition of resources`,
-             data = life)
-ex_inc %>%
-  glance() %>%
-  select(AIC, BIC, adj.r.squared)
-ex_sch %>%
-  glance() %>%
-  select(AIC, BIC, adj.r.squared)
-final_model <- ex_sch
+sch <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+            `infant deaths` + `Hepatitis B` + `Measles` + 
+            `Total expenditure` + `Diphtheria` + `HIV/AIDS` + 
+            `Schooling`, data = life)
+inc <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
+            `infant deaths` + `Hepatitis B` + `Measles` + 
+            `Total expenditure` + `Diphtheria` + `HIV/AIDS` +
+            `Income composition of resources`, data = life)
+model_with("Schooling", sch) %>%
+  rbind(model_with("Income Composition of Resources", inc)) %>%
+  kable(caption = "Schooling vs. Income Composition of Resources",
+        digits = 3)
+selected_model <- inc
 ```
 
 When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$. Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
-### Model Diagnostics
+### Model Conditions and Diagnostics
 
 ```{r augment}
 selected_model_aug <- augment(selected_model)
 selected_model_aug <- selected_model_aug %>%
   mutate(obs_num = 1:nrow(selected_model_aug))
 ```
+
+```{r normality-viz, fig.height = 3, fig.width = 8}
+resid_hist <- selected_model_aug %>%
+  ggplot(aes(x = .std.resid)) +
+  geom_histogram() +
+  labs(title = "Distribution of Standardized Residuals",
+       x = "Residual",
+       y = "Count")
+resid_qq <- selected_model_aug %>%
+  ggplot(aes(sample = .std.resid)) +
+  stat_qq() +
+  stat_qq_line() +
+  labs(title = "QQ plot of Standardized Residuals",
+       x = "Theoretical",
+       y = "Actual")
+resid_hist + resid_qq
+```
+
+Judging from the histogram and QQ plot above, the standardized residuals appear to be normally distributed, thus fulfilling the normality condition. 
 
 ```{r}
 ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
@@ -407,14 +429,14 @@ ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
        title = "Standardized Residuals vs. Predicted")
 ```
 
-There are a few moderate outliers and two severe outliers. Will look into these later.
+The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, there are a few moderate outliers and two severe outliers. Will look into these later.
 
 ```{r threshold}
 # (2(p+1))/n
 leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
-kable(leverage_threshold,
-      caption = "Leverage Threshold:",
-      align = "l")
+# kable(leverage_threshold,
+#       caption = "Leverage Threshold:",
+#       align = "l")
 ```
 
 ```{r high-leverage-influencial}
@@ -426,19 +448,6 @@ selected_model_aug %>%
   select(obs_num, .cooksd) 
 ```
 The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 15 observations have high leverage and 0 observations are influential.
-
-### Model Conditions/Assumptions
-
-```{r normality-viz}
-(resid_hist <- final_model %>%
-  augment() %>%
-  ggplot(aes(x = .std.resid)) +
-  geom_histogram() +
-  labs(title = "Distribution of Residuals",
-       subtitle = "Final Model",
-       x = "Residual",
-       y = "Count"))
-```
 
 ## Results
 
