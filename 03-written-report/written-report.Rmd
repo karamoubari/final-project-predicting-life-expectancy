@@ -337,6 +337,38 @@ selected_model <- backward_aic
 
 Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ which means that the model's predictor variables explain the highest proportion of the variation in the response (`Life expectancy`) out of all four models. Moreover, this model is the only model of the four that is superior to the other models in more than one metric. 
 
+### Potential Interaction Terms
+
+Before proceeding with the model, we will look at some potential interaction terms
+to see if they should be added to the selected model. We will begin by looking 
+at the interaction between Region and HIV/AIDS. This is because we might suspect
+that the impact of HIV/AIDS on life expectancy changes by region due to 
+disparate access to relatively new treatments. The interaction between Region 
+and Income composition of resources is also shown. The table below shows the 
+selected model including these interaction terms, but only displays the interaction 
+terms. 
+
+```{r interactions}
+interaction_model <- lm(`Life expectancy` ~ Region + `Adult Mortality` + 
+                   `infant deaths` + Region*`HIV/AIDS` + 
+                     Region*`Income composition of resources` +
+                   `Hepatitis B` + Measles + `under-five deaths`+ `Total expenditure` + 
+                     Diphtheria + `HIV/AIDS`+ `Income composition of resources` + 
+                   Schooling, data = life)
+
+interaction_model <- tidy(interaction_model) %>%
+  filter(grepl(":", term))
+
+kable(interaction_model, digits = 3, 
+      caption = "Selected Model Interaction Terms")
+```
+
+As shown in the table above, there are no significant interaction terms for
+the variables investigated. Thus, there is not enough evidence to say that
+there is a significant interaction term between Region and HIV/AIDS or Region 
+and Income composition of resources.
+
+
 ### Multicollinearity
 
 ```{r multicollinearity}
@@ -492,6 +524,8 @@ kable(tidy(selected_model),
 ```
 
 93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+
+
 
 ## Appendix
 
