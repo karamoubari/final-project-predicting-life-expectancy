@@ -131,6 +131,8 @@ In terms of initial hypotheses of model selection, we expect that the strongest 
 
 Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data sets came from Kaggle. 
 
+In this project we plan on using various regression analysis methods including, but not limited to, multiple linear regression, statistical inference, analysis of variance, and model selection in an attempt to understand country and region-level life expectancy, as well as the health, social, and economic relationships behind this number. 
+
 \newpage
 
 *Definitions of Key Predictor Variables:*
@@ -271,13 +273,13 @@ infant_five + schooling_income + title
 
 ## Methodology
 
-### Model Selection
+In order to create a model capable of predicting life expectancy, we use model selection to cull the number of potential predictor variables. We then assess whether certain interaction terms should be added to the model before addressing multicollinearity. Finally, with the set of predictor variables finalized, we ascertain whether any variable transformations are necessary through condition checking and identify outliers by examining model diagnostics. 
 
-In this project we plan on using various regression analysis methods including, but not limited to, multiple linear regression, statistical inference, analysis of variance, and model selection in an attempt to understand country and region-level life expectancy, as well as the health, social, and economic relationships behind this number. 
+### Model Selection
 
 The response variable we will be using in this project is `Life expectancy`. This is a measure of the average age of death in a year for the given country during that year. In terms of regression model technique, we will be using multiple linear regression because our response variable is quantitative.
 
-The goal of our analysis is to calculate the most precise prediction of the response variable (life expectancy). To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criteria while backward selection means dropping variables one at a time that are deemed irrelevant based on AIC or BIC.
+The goal of our analysis is to calculate the most precise prediction of the response variable (`Life expectancy`). To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criterion while backward selection means dropping variables one at a time that are deemed irrelevant based on AIC or BIC.
 
 ```{r full-model}
 life <- life %>%
@@ -335,7 +337,7 @@ kable(out[-1, ], caption = "Potential Models", digits = 3)
 selected_model <- backward_aic
 ```
 
-Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ which means that the model's predictor variables explain the highest proportion of the variation in the response (`Life expectancy`) out of all four models. Moreover, this model is the only model of the four that is superior to the other models in more than one metric. 
+Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric. 
 
 ### Potential Interaction Terms
 
@@ -363,10 +365,11 @@ kable(interaction_model, digits = 3,
       caption = "Selected Model Interaction Terms")
 ```
 
-As shown in the table above, some of the groups do not have enough data to generate model coefficients. For the model coefficients calculated, there are no significant interaction terms forthe variables investigated. Thus, there is not enough evidence to say that
+As shown in the table above, some of the groups do not have enough data to generate model coefficients. For the model coefficients calculated, there are no significant interaction terms for the variables investigated. Thus, there is not enough evidence to say that
 there is a significant interaction term between Region and HIV/AIDS or Region 
 and Income composition of resources. 
 
+\newpage
 
 ### Multicollinearity
 
@@ -378,7 +381,7 @@ vif(selected_model) %>%
 ```
 Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`. These two relationships were visualized in the EDA. 
 
-We should try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we ought to compare models with only `Income composition of resources` or `Schooling` and decide which variable to keep. 
+We should try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we ought to compare models with only `Income composition of resources` or `Schooling` and keep only one of the two. 
 
 ```{r infant-five}
 inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
@@ -397,10 +400,10 @@ model_with <- function(variable, model) {
     select(AIC, BIC, adj.r.squared) %>%
     mutate(`Included Variable` = variable, .before = AIC)
 }
-model_with("Infant Deaths", five) %>%
-  rbind(model_with("Under-five Deaths", inf)) %>%
+model_with("Infant Deaths", inf) %>%
+  rbind(model_with("Under-five Deaths", five)) %>%
   kable(caption = "Infant Deaths vs. Under-five Deaths",
-        digits = 3)
+        digits = 4)
 ```
 
 When comparing two models that are identical except that one includes `under-five deaths` and the other includes `infant deaths`, the one that includes `infant deaths` has lower values of AIC and BIC as well as a higher value of adjusted $R^2$.
@@ -442,7 +445,7 @@ resid_qq <- selected_model_aug %>%
   ggplot(aes(sample = .std.resid)) +
   stat_qq() +
   stat_qq_line() +
-  labs(title = "QQ plot of Standardized Residuals",
+  labs(title = "QQ Plot of Standardized Residuals",
        x = "Theoretical",
        y = "Actual")
 resid_hist + resid_qq
@@ -450,16 +453,19 @@ resid_hist + resid_qq
 
 Judging from the histogram and QQ plot above, the standardized residuals appear to be normally distributed, thus fulfilling the normality condition. 
 
-```{r residual-plot}
+```{r residual-plot, fig.height = 3, fig.width = 6}
 ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
   geom_point(alpha = 0.7) + 
   geom_hline(yintercept = 0, color = "red") +
-  geom_hline(yintercept = -2,color = "black",linetype = "dotted") +
-  geom_hline(yintercept = 2,color = "black",linetype = "dotted") +
+  geom_hline(yintercept = -2, color = "black", linetype = "dotted") +
+  geom_hline(yintercept = 2, color = "black", linetype = "dotted") +
   geom_hline(yintercept = -3, color = "red", linetype = "dotted") +
   geom_hline(yintercept = 3, color = "red", linetype = "dotted") +
   labs(x = "Predicted", y = "Standardized Residuals",
        title = "Standardized Residuals vs. Predicted")
+```
+
+```{r response-outliers, results = "hide"}
 selected_model_aug %>%
   filter(.std.resid > 2 | .std.resid < -2) %>%
   left_join(life) %>%
@@ -467,7 +473,7 @@ selected_model_aug %>%
   kable(caption = "Life Expectancy Outliers", digits = 3)
 ```
 
-The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Iraq has a higher life expectancy than what we expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have lower values for life expectancy than what was predicted. 
+The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
 
 ```{r linearity-viz, fig.height = 10, fig.width = 8}
 # https://www.youtube.com/watch?v=nqI5CmdUYRQ
@@ -510,9 +516,7 @@ selected_model_aug %>%
   select(Country, .cooksd) 
 ```
 
-12 countries, shown in the table above, have high leverage but none are influential.
-
-The points in the first table are points with high leverage (.hat > leverage_threshold = 0.3230769) while the points in the second table are influential points (.cooksd > 0.5). 
+The 12 countries in the table above have high leverage (leverage > leverage_threshold = 0.3230769) while no countries are influential (Cook's Distance > 0.5). 
 
 ## Results
 
@@ -520,11 +524,14 @@ The points in the first table are points with high leverage (.hat > leverage_thr
 kable(tidy(selected_model),
       caption = "Selected Model",
       digits = 3)
+r_sq <- selected_model %>%
+  glance %>%
+  select(r.squared) %>%
+  prod(100) %>%
+  round(2)
 ```
 
-93.03% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
-
-
+`r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
 
 ## Appendix
 
