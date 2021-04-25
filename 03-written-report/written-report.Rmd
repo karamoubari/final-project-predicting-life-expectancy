@@ -119,8 +119,6 @@ rm(year)
 rm(temp)
 ```
 
-Your written report goes here! Before you submit, make sure your code chunks are turned off with `echo = FALSE` and there are no warnings or messages with `warning = FALSE` and `message = FALSE` 
-
 ## Introduction and Data
 
 ### Research question, background, and data
@@ -135,8 +133,7 @@ In addition to the more obvious health-related connections to life expectancy, n
 
 In terms of initial hypotheses of model selection, we expect that stronge predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
-Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Deeksha Russell and Duan Wang for creating the datasets.
-
+Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Deeksha Russell, Duan Wang, Fernando Lasso, and the above organizations for contributing to the creation of our datasets.
 
 \newpage
 
@@ -299,6 +296,8 @@ infant_five + schooling_income + title
 
 ## Methodology
 
+In order to answer the research question, we will be using multivariable linear regression techniques due to the quantitative nature of our response variable, `Life expectancy`.
+
 In order to create a model capable of predicting life expectancy, we use model selection to cull the number of potential predictor variables. We then assess whether certain interaction terms should be added to the model before addressing multicollinearity. Finally, with the set of predictor variables finalized, we ascertain whether any variable transformations are necessary through condition checking and identify outliers by examining model diagnostics. 
 
 ### Model Selection
@@ -363,7 +362,7 @@ kable(out[-1, ], caption = "Potential Models", digits = 3)
 selected_model <- backward_aic
 ```
 
-Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric. 
+Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric (AIC and $R^2$). 
 
 ### Potential Interaction Terms
 
@@ -550,6 +549,7 @@ The 12 countries in the table above have high leverage (leverage > leverage_thre
 kable(tidy(selected_model),
       caption = "Selected Model",
       digits = 3)
+
 r_sq <- selected_model %>%
   glance %>%
   select(r.squared) %>%
@@ -557,7 +557,17 @@ r_sq <- selected_model %>%
   round(2)
 ```
 
-`r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+`r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+
+## Discussion + Conclusion
+
+When looking at this selected model, a few things stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information on economic, social, or health-related factors that differentiate geographic regions were missing from our data. If this project, were to be expanded, it would be important to include more than 23 potential variables in the full model.
+
+Additionally, it is interesting to see that according to our model, a unit increase in infant deaths and Hepatitis B is expected to also increase life expectancy, on average (due to the positive estimated coefficients of these variables). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-values of these variables are relatively high. This means that assuming the null hypothesis that these variables add no additional information to the model is true, the probability of observing a coefficient at least as extreme as the one we've observed is not super unlikely. We have a similar situation for Measles, which according to our model, adds no additional information to model even though it made it past all the model selection methods we conducted. 
+
+Another interesting finding is the extremely high coefficient of `Income composition of resources`. With an estimated coefficient of 31.747, this means that for each additional unit of HDI (Human Development Index), we expect life expectancy to increase by 31.747 years, on average, holding all other predictor variables constant. However, this makes sense when it is understood that HDI is measured on a scale of 0 to 1, meaning that this outrageous increase will only be expected to happen if HDI goes all the way from 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+
+\newpage
 
 ## Appendix
 
@@ -567,7 +577,8 @@ tidy(full_model) %>%
         digits = 3)
 ```
 
-## Sources
+
+## References
 
 [1] https://ourworldindata.org/life-expectancy 
 
