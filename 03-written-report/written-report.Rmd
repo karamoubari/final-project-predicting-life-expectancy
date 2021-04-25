@@ -577,7 +577,6 @@ tidy(full_model) %>%
         digits = 3)
 ```
 
-
 ## References
 
 [1] https://ourworldindata.org/life-expectancy 
