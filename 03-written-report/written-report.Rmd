@@ -364,6 +364,8 @@ selected_model <- backward_aic
 
 Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric (AIC and $R^2$). 
 
+\newpage
+
 ### Potential Interaction Terms
 
 Before proceeding with the model, we will look at some potential interaction terms
@@ -449,6 +451,8 @@ model_with("Schooling", sch) %>%
 selected_model <- inc
 ```
 
+\newpage
+
 Likewise, given two models that have the same predictors except that one includes `Schooling` while the other includes `Income composition of resources`, the one that includes `Income composition of resources` is superior in terms of AIC, BIC, and adjusted $R^2$.
 
 ### Model Conditions and Diagnostics
@@ -491,11 +495,11 @@ ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
 ```
 
 ```{r response-outliers, results = "hide"}
-selected_model_aug %>%
+high_res <- selected_model_aug %>%
   filter(.std.resid > 2 | .std.resid < -2) %>%
   left_join(life) %>%
-  select(Country, `Standardized Residual` = .std.resid) %>%
-  kable(caption = "Life Expectancy Outliers", digits = 3)
+  select(Country, `Standardized Residual` = .std.resid) 
+kable(high_res, caption = "Life Expectancy Outliers", digits = 3)
 ```
 
 The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
@@ -527,11 +531,11 @@ leverage_threshold <- 2 * (20 + 1) / nrow(selected_model_aug)
 ```
 
 ```{r high-leverage}
-selected_model_aug %>%
+high_lev <- selected_model_aug %>%
   filter(.hat > leverage_threshold) %>%
   left_join(life) %>%
-  select(Country, Leverage = .hat) %>%
-  kable(caption = "Predictor Variable Outliers", digits = 3)
+  select(Country, Leverage = .hat) 
+kable(high_lev, caption = "Predictor Variable Outliers", digits = 3)
 ```
 
 ```{r influential, results = "hide"}
@@ -546,9 +550,9 @@ The 12 countries in the table above have high leverage (leverage > leverage_thre
 ## Results
 
 ```{r selected-model}
-kable(tidy(selected_model),
-      caption = "Selected Model",
-      digits = 3)
+(table_selected_model <- kable(tidy(selected_model),
+                               caption = "Selected Model",
+                               digits = 3))
 
 r_sq <- selected_model %>%
   glance %>%
@@ -557,7 +561,7 @@ r_sq <- selected_model %>%
   round(2)
 ```
 
-`r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`.
+This is our final model. `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`. We will discuss s
 
 ## Discussion + Conclusion
 
@@ -565,7 +569,46 @@ When looking at this selected model, a few things stand out. First, it was inter
 
 Additionally, it is interesting to see that according to our model, a unit increase in infant deaths and Hepatitis B is expected to also increase life expectancy, on average (due to the positive estimated coefficients of these variables). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-values of these variables are relatively high. This means that assuming the null hypothesis that these variables add no additional information to the model is true, the probability of observing a coefficient at least as extreme as the one we've observed is not super unlikely. We have a similar situation for Measles, which according to our model, adds no additional information to model even though it made it past all the model selection methods we conducted. 
 
-Another interesting finding is the extremely high coefficient of `Income composition of resources`. With an estimated coefficient of 31.747, this means that for each additional unit of HDI (Human Development Index), we expect life expectancy to increase by 31.747 years, on average, holding all other predictor variables constant. However, this makes sense when it is understood that HDI is measured on a scale of 0 to 1, meaning that this outrageous increase will only be expected to happen if HDI goes all the way from 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+Another interesting finding is the extremely high coefficient of `Income composition of resources`. With an estimated coefficient of 31.747, this means that for each additional unit of HDI (Human Development Index), we expect life expectancy to increase by 31.747 years, on average, holding all other predictor variables constant. However, this makes sense when it is understood that HDI is measured on a scale of 0 to 1, meaning that this outrageous increase will only be expected to happen if HDI goes all the way from 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+
+```{r no-response-outliers, results = "hide"}
+table_selected_model
+
+life %>% 
+  filter(!(Country %in% high_res$Country)) %>%
+  lm(`Life expectancy` ~ Region + `Adult Mortality` + `infant deaths` +
+       `Hepatitis B` + Measles + `Total expenditure` + Diphtheria +
+       `HIV/AIDS` + `Income composition of resources`, data = .) %>%
+  tidy() %>%
+  kable(caption = "Model Without Angola, Iraq, Lesotho, and Sierra Leone", 
+        digits = 3)
+
+model_without <- function(country) {
+  life %>% 
+  filter(Country != country) %>%
+  lm(`Life expectancy` ~ Region + `Adult Mortality` + `infant deaths` +
+       `Hepatitis B` + Measles + `Total expenditure` + Diphtheria +
+       `HIV/AIDS` + `Income composition of resources`, data = .) %>%
+  tidy() %>%
+  kable(digits = 3, caption = paste("Model Without", country)) 
+}
+
+map(high_res$Country, model_without)
+```
+
+```{r no-high-leverage, results = "hide"}
+table_selected_model
+
+life %>% 
+  filter(!(Country %in% high_lev$Country)) %>%
+  lm(`Life expectancy` ~ Region + `Adult Mortality` + `infant deaths` +
+       `Hepatitis B` + Measles + `Total expenditure` + Diphtheria +
+       `HIV/AIDS` + `Income composition of resources`, data = .) %>%
+  tidy() %>%
+  kable(caption = "Model Without High Leverage Countries", digits = 3)
+```
+
+A further caveat for our model is that the data set used to fit the model contains outliers that have an outsized impact on the model itself. If we remove the four countries with large-magnitude standardized residuals from the data set and refit the model, we observe a dramatic effect on the p-value of `Total expenditure`. Whereas the coefficient had been positive and non-significant with a p-value above 0.2 in the model with the four countries, it becomes very significant with a p-value of around 0.008 once these observations are absent from the data set. Upon closer inspection, we found that individually removing Iraq, Lesotho, and Sierra Leone reduces the p-value of `Total expenditure`. However, removing Angola increases the p-value. Thus, it appears that it is the former three countries that are behind this effect. On the other hand, there are no differences between the model that excludes high leverage observations and the selected model that are as dramatic as the one between the model that excludes large-magnitude standardized residual observations and the selected model.
 
 \newpage
 
