@@ -236,8 +236,10 @@ p5 <- ggplot(data = by_status, aes(x = `Status`, y = `mean`)) +
 (p1 + p3) / (p4 + p5)
 ```
 
-Here we see that life expectancy is left skewed with a center just over 70 years.
-Life expectancy ranges from about 50 years to 90 years. Additionally, we see that a strong negative relationship between life expectancy and adult mortality, as well as much higher life expectancies among countries with `status` "developed" than "developing".
+In terms of the resposne variable, we see that life expectancy is left skewed with a center just over 70 years. Life expectancy ranges from about 50 years to 90 years. 
+
+For relationships with predictor variables, we see that a strong negative relationship between life expectancy and adult mortality. We also a see a strange diversion in the points between countries that have lower and higher adult mortaltities. We predict that this is because some of those countries have higher infant mortalities, driving life expectancy down. We also see much higher life expectancies among countries with `status` "developed" than "developing" with a difference of about 12 years.
+
 
 ```{r world map}
 library(ggplot2)
