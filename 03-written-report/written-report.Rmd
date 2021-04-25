@@ -272,7 +272,7 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 #https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 ```
 
-Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is generally  higher in North American and European countries than African countries.
+Here we can see the differences in life expectancy around the world. This map allows us to visualize how life expectancy varies between regions. It appears that that the Sub-Saharan African region has the lowest life-expectancy, while regions like North America and Western Europe have the highest life expectancy. This makes sense because certain regions around are more developed than others. 
 
 \newpage
 
