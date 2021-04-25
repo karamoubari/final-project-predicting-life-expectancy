@@ -123,43 +123,42 @@ Your written report goes here! Before you submit, make sure your code chunks are
 
 ## Introduction and Data
 
-By telling us the average age of death in a population, life expectancy is a key metric for understanding a country's health. According to Max Roser, Esteban Ortiz-Ospina and Hannah Ritchie from Our World in Data, "Broader than the narrow metric of the infant and child mortality, which focus solely at mortality at a young age, life expectancy captures the mortality along the entire life course."[1] Over the course of history, life expectancy has risen dramatically. It is estimated that in pre-modern times, life expectancy worldwide was only about 30 years. Since the Industrial Revolution in the 18th and 19th centuries, many countries had huge gains in this number. And since the beginning of the 20th century, global average life expectancy has risen to about 70 years. However, there remain huge inequalities in this number. Currently (as of 2019), the Central African Republic has the lowest life expectancy of 53 years while Japan has the highest with 83.
+### Research question, background, and data
+
+In this research project, we hope to most accurately predict life expectancy using economic, social, and health-related country level-data in conjunction with the regression analysis method, multiple linear regression. Therefore our research question is: how can we most accurately predict a country's average life expectancy?
+
+By telling us the average age of death in a population, life expectancy is a key metric for understanding a country's health. According to Max Roser, Esteban Ortiz-Ospina and Hannah Ritchie from Our World in Data, "Broader than the narrow metric of the infant and child mortality, which focus solely at mortality at a young age, life expectancy captures the mortality along the entire life course."[1] 
+
+Over the course of history, life expectancy has risen dramatically. It is estimated that in pre-modern times, life expectancy worldwide was only about 30 years. Since the Industrial Revolution in the 18th and 19th centuries, many countries had huge gains in this number. And since the beginning of the 20th century, global average life expectancy has risen to about 70 years. However, there remain huge inequalities in this number. Currently (as of 2019), the Central African Republic has the lowest life expectancy of 53 years while Japan has the highest with 83.
 
 In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, looking at various health-related and non-health-related factors that connect to life expectancy.
 
-In terms of initial hypotheses of model selection, we expect that the strongest predictors of life expectancy will be `Adult Mortality`, `infant deaths`, and `GDP`. We also predict that countries that have `status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
+In terms of initial hypotheses of model selection, we expect that stronge predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
-Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data sets came from Kaggle. 
+Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Deeksha Russell and Duan Wang for creating the datasets.
 
-In this project we plan on using various regression analysis methods including, but not limited to, multiple linear regression, statistical inference, analysis of variance, and model selection in an attempt to understand country and region-level life expectancy, as well as the health, social, and economic relationships behind this number. 
 
 \newpage
 
-*Definitions of Key Predictor Variables:*
+*Definitions of Relevant Variables:*
 
-Region: Area, subcontinent, or continent where a country is located
+`Life expectancy`: Average life expectancy in years (Response variable)
 
-Adult Mortality: Probability of dying between 15 and 60 years per 1000 population
+`Country`: Name of country (Identifier variable)
 
-Infant Deaths: Number of infant deaths per 1000 population
+`Region`: Area, subcontinent, or continent where a country is located (Possible predictor variable)
 
-Hepatitis B: Percentage of hepatitis B immunization coverage among 1-year-olds
+`Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population (Possible predictor variable)
+ 
+`infant deaths`: Number of infant deaths per 1000 population (Possible predictor variable)
 
-Measles: Number of reported measles cases per 1000 population
+`under-five deaths`: Number of under-five deaths per 1000 population (Possible predictor variable)
 
-Under-Five Deaths: Number of under-five deaths per 1000 population
+`Total expenditure`: General government expenditure on health as a percentage of total government expenditure (Possible predictor variable)
 
-Total Expenditure: General government expenditure on health as a percentage of total government expenditure
+`Status`: Developed or developing status (Possible predictor variable)
 
-Diphtheria: Percentage of DTP3 immunization coverage among 1-year-olds
-
-HIV/AIDS: Deaths per 1000 live births HIV/AIDS (0-4 years)
-
-Income composition of resources: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
-
-Schooling: Average years of schooling/education
-
-## Exploratory Data Analysis
+### Exploratory Data Analysis
 
 First, we will look at some summary statistics of our response variable, `Life expectancy`.
 Though it is possible to analyze the entire data set over all years, this creates difficulties 
@@ -168,7 +167,7 @@ with creating models. As one might expect, the average global life expectancy in
 by our predictor variables or if it is simply due to human development over time. As a result, we 
 will only use data from one year to perform our analysis.
 
-We will only analyze life expectancy for the year 2011, because it is the latest year among those years in which no variable has a missing rate greater than 22%.
+We will only analyze life expectancy for the year 2011, because it is the latest year among those years with the least missing data (no variable has a missing rate greater than 22%).
 
 ```{r summary-stats1, warning = FALSE}
 life %>%
@@ -191,7 +190,7 @@ Additionally, the median is closer to the third quartile than the first quartile
 This suggests that life expectancy may be left-skewed, which we will evaluate further 
 with visualizations.
 
-Now, we will look at some summary visualizations of life expectancy.
+Now, we will look at some summary visualizations of life expectancy, as well as other possibly relavant predictor variables.
 
 ```{r summary-viz}
 p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
@@ -200,23 +199,45 @@ p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) +
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "Count")
+
 p2 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_density() + 
   labs(title = "Distribution of Life Expectancy",
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "Proportion")
+
 p3 <- ggplot(data = life, mapping = aes(x = `Life expectancy`, y = "")) + 
   geom_boxplot() + 
   labs(title = "Distribution of Life Expectancy",
        subtitle = "2011",
        x = "Life Expectancy (Years)",
        y = "")
-(p1 + p2) / p3
+
+p4 <- ggplot(data = life, aes(x = `Adult Mortality`, 
+                              y = `Life expectancy`)) +
+  geom_point() +
+  labs(x = "Adult Mortality",
+       y = "Life Expectancy",
+       title = "Life Expectancy vs. Adult Mortality")
+
+by_status <- life %>%
+  filter(!is.na(`Life expectancy`)) %>%
+  group_by(`Status`) %>%
+  summarise(mean = mean(`Life expectancy`))
+
+p5 <- ggplot(data = by_status, aes(x = `Status`, y = `mean`)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Status",
+       y = "Life Expectancy",
+       title = "Life Expectancy by Country Status",
+       subtitle = "Developed or developing")
+
+(p1 + p3) / (p4 + p5)
 ```
 
 Here we see that life expectancy is left skewed with a center just over 70 years.
-Life expectancy ranges from about 50 years to 90 years. 
+Life expectancy ranges from about 50 years to 90 years. Additionally, we see that a strong negative relationship between life expectancy and adult mortality, as well as much higher life expectancies among countries with `status` "developed" than "developing".
 
 ```{r world map}
 library(ggplot2)
@@ -252,7 +273,7 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 #https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 ```
 
-Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is much higher in North and South American countries when compared to African countries.
+Here we can see the differences in life expectancy across the world. For example, it is clear that life expectancy is generally  higher in North American and European countries than African countries.
 
 \newpage
 
@@ -262,12 +283,15 @@ infant_five <- ggplot(data = life, aes(x = `infant deaths`,
   geom_point() +
   labs(x = "Infant Deaths",
        y = "Under-five Deaths")
+
 schooling_income <- ggplot(data = life, 
                            aes(x = Schooling, 
                                y = `Income composition of resources`)) +
   geom_point() +
   labs(y = "Income Composition of Resources")
+
 title <- plot_annotation("Correlated Predictors")
+
 infant_five + schooling_income + title
 ```
 
