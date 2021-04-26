@@ -143,17 +143,26 @@ Our primary data set is comprised of information that had been gleaned from the 
 
 `Country`: Name of country (Identifier variable)
 
-`Region`: Area, subcontinent, or continent where a country is located (Possible predictor variable)
+Predictors Variables:
 
-`Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population (Possible predictor variable)
+`Region`: Area, subcontinent, or continent where a country is located
+
+`Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population 
  
-`infant deaths`: Number of infant deaths per 1000 population (Possible predictor variable)
+`infant deaths`: Number of infant deaths per 1000 population
 
-`under-five deaths`: Number of under-five deaths per 1000 population (Possible predictor variable)
+`Hepatitis B`: Percentage of hepatitis B immunization coverage among 1-year-olds
 
-`Total expenditure`: General government expenditure on health as a percentage of total government expenditure (Possible predictor variable)
+`Measles`: Number of reported measles cases per 1000 population
 
-`Status`: Developed or developing status (Possible predictor variable)
+`Total expenditure`: General government expenditure on health as a percentage of total government expenditure
+
+`Diphtheria`: Percentage of DTP3 immunization coverage among 1-year-olds
+
+`HIV/AIDS`: Deaths per 1000 live births HIV/AIDS (0-4 years)
+
+`Income composition of resources`: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
+
 
 ### Exploratory Data Analysis
 
@@ -561,7 +570,7 @@ r_sq <- selected_model %>%
   round(2)
 ```
 
-This is our final model. `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `under-five deaths`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, `Income composition of resources` and `Schooling`. We will discuss s
+This is our final model. `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, and `Income composition of resources`.
 
 ## Discussion + Conclusion
 
