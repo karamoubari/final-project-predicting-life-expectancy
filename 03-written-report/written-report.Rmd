@@ -655,7 +655,7 @@ relatively constant vertical spread. The residuals are positive on average,
 with a sum of `r sum(pred_life$res)`. This indicates that the model slightly
 underpredicts life expectancy for the next year (2012), but appears fairly accurate
 overall. We also see that $R^2=$ `r rsq`. This means that over 90% of the 
-variability in 2012 `Life expectancy` can be explained by our model, further 
+variability in 2012 life expectancy can be explained by our model, further 
 demonstrating that it can predict future life expectancy relatively accurately.
 
 ## Discussion + Conclusion
