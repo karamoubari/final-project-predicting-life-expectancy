@@ -601,7 +601,11 @@ Something else that stands out is the extremely high coefficient of `Income comp
 
 ### Prediction
 
-```{r}
+To evaluate the predictive power of our model, we predicted the life expectancy
+for each country during 2012 and compared to the observed values from the 
+original `life` dataset. The residual plot is shown below.
+
+```{r, fig.height = 5, fig.width = 8}
 # Dataframe of baseline observations for predicting
 base_obs <- life %>%
   select(Country, Region, `Adult Mortality`, `infant deaths`, `Hepatitis B`, Measles,
@@ -626,6 +630,11 @@ ggplot(data = pred_life, aes(x = `Life expectancy`, y = res)) +
        subtitle = "Predicted 2012 Life Expectancy")
 ```
 
+As seen above, the residuals for 2012 show no discernable pattern and display a 
+relatively constant vertical spread. The residuals are positive on average, 
+with a sum of `r sum(pred_life$res)`. This indicates that the model slightly
+underpredicts life expectancy for the next year (2012), but appears fairly accurate
+overall. 
 
 ## Discussion + Conclusion
 
