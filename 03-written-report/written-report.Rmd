@@ -136,9 +136,9 @@ Over the course of history, life expectancy has risen dramatically. It is estima
 
 In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, where we can look at various health-related and non-health-related factors that connect to life expectancy.
 
-In terms of initial hypotheses of model selection, we expect that stronge predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
+In terms of initial hypotheses of model selection, we expect that strong predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
-Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this data set lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Deeksha Russell, Duan Wang, Fernando Lasso, and the above organizations for contributing to the creation of our datasets.
+Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this dataset lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Deeksha Russell, Duan Wang, Fernando Lasso, and the above organizations for contributing to the creation of our datasets.
 
 \newpage
 
@@ -421,7 +421,9 @@ kable(interaction_model, digits = 3,
 
 As shown in the table above, some of the groups do not have enough data to generate model coefficients. For the model coefficients calculated, there are no significant interaction terms for the variables investigated. Thus, there is not enough evidence to say that
 there is a significant interaction term between Region and HIV/AIDS or Region 
-and Income composition of resources. 
+and Income composition of resources. Although we cannot check all possible interactions, 
+we see no significant interaction between the variables investigated above and in the EDA.
+As a result, we will not include any interaction terms in the model. 
 
 \newpage
 
