@@ -210,31 +210,30 @@ Now, we will look at some summary visualizations of life expectancy, as well as 
 ```{r summary-viz, fig.height = 2, fig.width = 6}
 p1 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_histogram() + 
-  labs(title = "Distribution of Life Expectancy",
-       subtitle = "2011",
+  labs(title = "Distribution of Life Expectancy (2011)",
        x = "Life Expectancy (Years)",
-       y = "Count")
+       y = "Count") + 
+  theme(plot.title = element_text(size=11), axis.title=element_text(size=10))
 
 p2 <- ggplot(data = life, mapping = aes(x = `Life expectancy`)) + 
   geom_density() + 
-  labs(title = "Distribution of Life Expectancy",
-       subtitle = "2011",
+  labs(title = "Distribution of Life Expectancy (2011)",
        x = "Life Expectancy (Years)",
        y = "Proportion")
 
 p3 <- ggplot(data = life, mapping = aes(x = `Life expectancy`, y = "")) + 
   geom_boxplot() + 
-  labs(title = "Distribution of Life Expectancy",
-       subtitle = "2011",
+  labs(title = "Distribution of Life Expectancy (2011)",
        x = "Life Expectancy (Years)",
-       y = "")
+       y = "") + 
+  theme(plot.title = element_text(size=11), axis.title=element_text(size=10))
 
 by_status <- life %>%
   filter(!is.na(`Life expectancy`)) %>%
   group_by(`Status`) %>%
   summarise(mean = mean(`Life expectancy`))
 
-p1 + p3
+(p1 + p3)
 ```
 
 ```{r, fig.height = 2, fig.width = 6}
@@ -242,11 +241,14 @@ p5 <- ggplot(data = by_status, aes(x = `Status`, y = `mean`)) +
   geom_bar(stat = "identity") +
   labs(x = "Status",
        y = "Life Expectancy",
-       title = "Life Expectancy by Country Status",
-       subtitle = "Developed or developing") +
-  coord_flip()
+       title = "Life Expectancy",
+       subtitle = "by country status") + 
+  theme(plot.title = element_text(size=11), 
+        axis.title=element_text(size=10),
+        plot.subtitle = element_text(size=9))
+#+
+ # coord_flip()
 
-p5
 ```
 
 ```{r, fig.height = 3, fig.width = 6}
@@ -255,10 +257,14 @@ p4 <- ggplot(data = life, aes(x = `Adult Mortality`,
   geom_point(aes(size = `infant deaths`)) +
   labs(x = "Adult Mortality",
        y = "Life Expectancy",
-       title = "Life Expectancy vs. Adult Mortality") +
-  theme(legend.position = "bottom")
+       size = "Infant deaths per 1000",
+       title = "Life Expectancy vs. Adult Mortality") + 
+  theme(plot.title = element_text(size=11), 
+        axis.title=element_text(size=10),
+        legend.title=element_text(size=10),
+        legend.text=element_text(size=9))
 
-p4
+(p5 + p4)
 ```
 
 In terms of the resposne variable, we see that life expectancy is left skewed with a center just over 70 years. Life expectancy ranges from about 50 years to 90 years. 
@@ -320,7 +326,6 @@ title <- plot_annotation("Correlated Predictors")
 infant_five + schooling_income + title
 ```
 
-\newpage
 
 ## Methodology
 
@@ -593,11 +598,11 @@ This is our final model. `r r_sq`% of the variation in the `Life expectancy` is 
 
 One interesting key finding when looking at the variables included in our selected model is that the predictors for life expectancy were extremely multifaceted. Variables that related to health-related, economic, and social measures of a country all play an important part in predicting life expectancy.
 
-Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information on economic, social, or health-related factors that differentiate geographic regions were missing from our data. If this project, were to be expanded, it would be important to include more than 23 potential variables in the full model.
+Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information that differentiates geographic regions were missing from our data. If this project, were to be expanded, it would be important to include more than 23 potential variables in the full model.
 
 Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variables' coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
-Something else that stands out is the extremely high coefficient of `Income composition of resources`. With an estimated coefficient of 31.747, this means that for each additional unit of HDI (Human Development Index), we expect life expectancy to increase by 31.747 years, on average, holding all other predictor variables constant. However, this makes sense when it is understood that HDI is measured on a scale of 0 to 1, meaning that this outrageous increase will only be expected to happen if HDI goes all the way from 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
 
 ### Prediction
 
@@ -605,7 +610,7 @@ To evaluate the predictive power of our model, we predicted the life expectancy
 for each country during 2012 and compared to the observed values from the 
 original `life` dataset. The residual plot is shown below.
 
-```{r prediction, fig.height = 5, fig.width = 8}
+```{r prediction, fig.height = 3, fig.width = 8}
 # Dataframe of baseline observations for predicting
 base_obs <- life %>%
   select(Country, Region, `Adult Mortality`, `infant deaths`, `Hepatitis B`, Measles,
