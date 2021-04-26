@@ -111,6 +111,11 @@ map_dbl(years, ~ any(`>`(., 0.22)))
 # All the years where no variable has a missing rate greater 
 # than 0.22 has a 'population' missing rate of 0.2185792.
 map(years, ~ .[`>`(., 0.20)])
+# pred_life will be used for predicting 2012 life expectancy
+# using our 2011 model to test predictive power
+pred_life <- life %>%
+  filter(Year == 2012) %>%
+  drop_na()
 life <- filter(life, Year == 2011)
 # Remove unnecessary objects
 rm(na_prop)
@@ -593,6 +598,34 @@ Additionally, when looking at the selected model, a few other key findings stand
 Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variables' coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
 Something else that stands out is the extremely high coefficient of `Income composition of resources`. With an estimated coefficient of 31.747, this means that for each additional unit of HDI (Human Development Index), we expect life expectancy to increase by 31.747 years, on average, holding all other predictor variables constant. However, this makes sense when it is understood that HDI is measured on a scale of 0 to 1, meaning that this outrageous increase will only be expected to happen if HDI goes all the way from 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+
+### Prediction
+
+```{r}
+# Dataframe of baseline observations for predicting
+base_obs <- life %>%
+  select(Country, Region, `Adult Mortality`, `infant deaths`, `Hepatitis B`, Measles,
+         `Total expenditure`, Diphtheria, `HIV/AIDS`, `Income composition of resources`) %>%
+  # Remove Eritrea since it has NAs for 2012
+  filter(Country != "Eritrea")
+  
+# Predict 2012 life expectancy
+pred_life <- pred_life %>%
+  mutate(pred_LifeExp = predict(selected_model, base_obs, na.action = na.exclude))
+
+# Calculate residuals 
+pred_life <- pred_life %>%
+  mutate(res = `Life expectancy` - pred_LifeExp)
+
+# Visualize residuals
+ggplot(data = pred_life, aes(x = `Life expectancy`, y = res)) +
+  geom_point(alpha = 0.7) + 
+  geom_hline(yintercept = 0, color = "red") +
+  labs(x = "Predicted 2012 Life Expectancy", y = "Residuals",
+       title = "Residuals vs. Predicted",
+       subtitle = "Predicted 2012 Life Expectancy")
+```
+
 
 ## Discussion + Conclusion
 
