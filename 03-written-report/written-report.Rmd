@@ -605,7 +605,7 @@ To evaluate the predictive power of our model, we predicted the life expectancy
 for each country during 2012 and compared to the observed values from the 
 original `life` dataset. The residual plot is shown below.
 
-```{r, fig.height = 5, fig.width = 8}
+```{r prediction, fig.height = 5, fig.width = 8}
 # Dataframe of baseline observations for predicting
 base_obs <- life %>%
   select(Country, Region, `Adult Mortality`, `infant deaths`, `Hepatitis B`, Measles,
