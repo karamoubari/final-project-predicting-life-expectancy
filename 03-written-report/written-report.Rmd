@@ -139,29 +139,33 @@ Our primary data set is comprised of information that had been gleaned from the 
 
 *Definitions of Relevant Variables:*
 
-`Life expectancy`: Average life expectancy in years (Response variable)
+Response Variable:
 
-`Country`: Name of country (Identifier variable)
+- `Life expectancy`: Average life expectancy in years
+
+Identifier Variable:
+
+- `Country`: Name of country
 
 Predictors Variables:
 
-`Region`: Area, subcontinent, or continent where a country is located
+- `Region`: Area, subcontinent, or continent where a country is located
 
-`Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population 
+- `Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population 
  
-`infant deaths`: Number of infant deaths per 1000 population
+- `infant deaths`: Number of infant deaths per 1000 population
 
-`Hepatitis B`: Percentage of hepatitis B immunization coverage among 1-year-olds
+- `Hepatitis B`: Percentage of hepatitis B immunization coverage among 1-year-olds
 
-`Measles`: Number of reported measles cases per 1000 population
+- `Measles`: Number of reported measles cases per 1000 population
 
-`Total expenditure`: General government expenditure on health as a percentage of total government expenditure
+- `Total expenditure`: General government expenditure on health as a percentage of total government expenditure
 
-`Diphtheria`: Percentage of DTP3 immunization coverage among 1-year-olds
+- `Diphtheria`: Percentage of DTP3 immunization coverage among 1-year-olds
 
-`HIV/AIDS`: Deaths per 1000 live births HIV/AIDS (0-4 years)
+- `HIV/AIDS`: Deaths per 1000 live births HIV/AIDS (0-4 years)
 
-`Income composition of resources`: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
+- `Income composition of resources`: Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
 
 
 ### Exploratory Data Analysis
