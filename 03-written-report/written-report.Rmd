@@ -1,6 +1,6 @@
 ---
-title: "Predicting Country-level Life Expectancy"
-author: 'Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo'
+title: "Predicting Country-Level Life Expectancy"
+author: 'Team Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo'
 date: "`r Sys.Date()`"
 output:
   pdf_document: default
@@ -126,15 +126,15 @@ rm(temp)
 
 ## Introduction and Data
 
-### Research question, background, and data
+### Research Question, Background, and Data
 
-In this research project, we hope to most accurately predict life expectancy using economic, social, and health-related country level-data in conjunction with the regression analysis method, multiple linear regression. Therefore our research question is: how can we most accurately predict a country's average life expectancy?
+In this research project, we hope to most accurately predict life expectancy using economic, social, and health-related country level-data in conjunction with the regression analysis method of multiple linear regression. Therefore, our research question is: how can we most accurately predict a country's average life expectancy?
 
 By telling us the average age of death in a population, life expectancy is a key metric for understanding a country's health. According to Max Roser, Esteban Ortiz-Ospina and Hannah Ritchie from Our World in Data, "Broader than the narrow metric of the infant and child mortality, which focus solely at mortality at a young age, life expectancy captures the mortality along the entire life course."[1] 
 
-Over the course of history, life expectancy has risen dramatically. It is estimated that in pre-modern times, life expectancy worldwide was only about 30 years. Since the Industrial Revolution in the 18th and 19th centuries, many countries had huge gains in this number. And since the beginning of the 20th century, global average life expectancy has risen to about 70 years. However, there remain huge inequalities in this number. Currently (as of 2019), the Central African Republic has the lowest life expectancy of 53 years while Japan has the highest with 83.
+Over the course of history, life expectancy has risen dramatically. It is estimated that in pre-modern times, life expectancy worldwide was only about 30 years. Since the Industrial Revolution in the 18th and 19th centuries, many countries had large increases in life expectancy. Since the beginning of the 20th century, global average life expectancy has risen to about 70 years. However, there remain huge inequalities in this number. Currently (as of 2019), the Central African Republic has the lowest life expectancy of 53 years while Japan has the highest with 83 years.
 
-In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, looking at various health-related and non-health-related factors that connect to life expectancy.
+In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, where we can look at various health-related and non-health-related factors that connect to life expectancy.
 
 In terms of initial hypotheses of model selection, we expect that stronge predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
 
@@ -152,7 +152,7 @@ Identifier Variable:
 
 - `Country`: Name of country
 
-Predictors Variables:
+Predictor Variables:
 
 - `Region`: Area, subcontinent, or continent where a country is located
 
@@ -182,7 +182,7 @@ with creating models. As one might expect, the average global life expectancy in
 by our predictor variables or if it is simply due to human development over time. As a result, we 
 will only use data from one year to perform our analysis.
 
-We will only analyze life expectancy for the year 2011, because it is the latest year among those years with the least missing data (no variable has a missing rate greater than 22%).
+We will only analyze life expectancy for the year 2011 because it is the latest year among the years with the least missing data (no variable has a missing rate greater than 22%).
 
 ```{r summary-stats1, warning = FALSE}
 life %>%
@@ -303,7 +303,8 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 #https://www.r-spatial.org/r/2018/10/25/ggplot2-sf.html
 ```
 
-Here we can see the differences in life expectancy around the world. This map allows us to visualize how life expectancy varies between regions. It appears that that the Sub-Saharan African region has the lowest life-expectancy, while regions like North America and Western Europe have the highest life expectancy. This makes sense because certain regions around are more developed than others. 
+
+Above we can see the differences in life expectancy around the world. This map allows us to visualize how life expectancy varies between regions. It appears that that the Sub-Saharan African region has the lowest life expectancy, while regions like North America and Western Europe have the highest life expectancy. This makes sense because certain regions around the world are more developed than others. 
 
 ```{r correlated-predictors, fig.height = 3, fig.width = 8}
 infant_five <- ggplot(data = life, aes(x = `infant deaths`, 
@@ -524,7 +525,7 @@ ggplot(data = selected_model_aug, aes(x = .fitted, y = .std.resid)) +
        title = "Standardized Residuals vs. Predicted")
 ```
 
-```{r response-outliers, results = "hide"}
+```{r response-outliers, results = "show"}
 high_res <- selected_model_aug %>%
   filter(.std.resid > 2 | .std.resid < -2) %>%
   left_join(life) %>%
@@ -532,7 +533,7 @@ high_res <- selected_model_aug %>%
 kable(high_res, caption = "Life Expectancy Outliers", digits = 3)
 ```
 
-The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
+The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, the two countries Iraq and Lesotho are moderate outliers. Two other countries, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
 
 Moreover, the standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. The visualization illustrating this observation can be found in the appendix. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
 
@@ -601,7 +602,7 @@ One interesting key finding when looking at the variables included in our select
 
 Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant. The coefficient of `Income composition of resources` is highly significant, with a p-value near 0. 
 
-Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information that differentiates geographic regions were missing from our data. If this project, were to be expanded, it would be important to include more than 23 potential variables in the full model.
+Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information that differentiates geographic regions were missing from our data. If this project were to be expanded, it would be important to include more than 23 potential variables in the full model.
 
 Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variable's coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
@@ -648,7 +649,7 @@ relatively constant vertical spread. The residuals are positive on average,
 with a sum of `r sum(pred_life$res)`. This indicates that the model slightly
 underpredicts life expectancy for the next year (2012), but appears fairly accurate
 overall. We also see that $R^2=$ `r rsq`. This means that over 90% of the 
-variability in 2012 Life expectancy is explained by our model, further 
+variability in 2012 Life expectancy can be explained by our model, further 
 demonstrating that it can predict future life expectancy relatively accurately.
 
 ## Discussion + Conclusion
