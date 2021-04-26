@@ -1,5 +1,5 @@
 ---
-title: "Your project title"
+title: "Predicting Country-level Life Expectancy"
 author: 'Last!: Parker Dingman, Ethan Donecoff, Karam Oubari, Pei Yi Zhuo'
 date: "`r Sys.Date()`"
 output:
