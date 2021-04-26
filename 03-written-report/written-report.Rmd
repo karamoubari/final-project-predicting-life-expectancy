@@ -619,7 +619,12 @@ pred_life <- pred_life %>%
 
 # Calculate residuals 
 pred_life <- pred_life %>%
-  mutate(res = `Life expectancy` - pred_LifeExp)
+  mutate(res = `Life expectancy` - pred_LifeExp, 
+         tss = (`Life expectancy` - mean(`Life expectancy`))^2,
+         rss = (res)^2)
+
+# R-squared
+rsq <- 1 - sum(pred_life$rss)/sum(pred_life$tss)
 
 # Visualize residuals
 ggplot(data = pred_life, aes(x = `Life expectancy`, y = res)) +
@@ -634,7 +639,9 @@ As seen above, the residuals for 2012 show no discernable pattern and display a
 relatively constant vertical spread. The residuals are positive on average, 
 with a sum of `r sum(pred_life$res)`. This indicates that the model slightly
 underpredicts life expectancy for the next year (2012), but appears fairly accurate
-overall. 
+overall. We also see that $R^2=$ `r rsq`. This means that over 90% of the 
+variability in 2012 Life expectancy is explained by our model, further 
+demonstrating that it can predict future life expectancy relatively accurately.
 
 ## Discussion + Conclusion
 
