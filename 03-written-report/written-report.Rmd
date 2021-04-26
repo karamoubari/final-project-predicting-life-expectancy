@@ -200,7 +200,7 @@ life %>%
 ```
 
 These summary statistics give a rough idea of the distribution of the response variable.
-The median life expectancy (~73.3 yrs) is almost 3 years larger than the mean (~70.7 yrs).
+The median life expectancy (~73.3 yrs) is almost 3 years greater than the mean (~70.7 yrs).
 Additionally, the median is closer to the third quartile than the first quartile. 
 This suggests that life expectancy may be left-skewed, which we will evaluate further 
 with visualizations.
@@ -261,10 +261,10 @@ p4 <- ggplot(data = life, aes(x = `Adult Mortality`,
         legend.title=element_text(size=10),
         legend.text=element_text(size=9))
 
-(p5 + p4)
+(p4 + p5)
 ```
 
-In terms of the response variable, we see that `Life expectancy` is left skewed with a center just over 70 years. `Life expectancy` ranges from about 50 years to 90 years. 
+In terms of the response variable, we see that `Life expectancy` is skewed to the left with a center just over 70 years. `Life expectancy` ranges from about 50 years to 90 years. 
 
 For relationships with predictor variables, we see that a strong negative relationship exists between `Life expectancy` and `Adult Mortality`. We also a see a strange diversion in the points between countries that have lower and higher values for `Adult mortality`. There appears to be two groups of countries in the scatter plot, a smaller group that exhibits a greater `Life expectancy` penalty for a given increase in `Adult Mortality` than the larger group. We thought that this is because some of those countries have higher infant mortalities, driving life expectancy down. However, when points are sized according to `infant deaths`, this is shown not to be the case. We also see much higher `Life expectancy` among countries with the `status` "developed" than "developing", with a difference of about 12 years.
 
@@ -304,7 +304,7 @@ ggplot(data = life_map, mapping = aes(long, lat, group = group)) +
 ```
 
 
-Above we can see the differences in life expectancy around the world. This map allows us to visualize how life expectancy varies between regions. It appears that that the Sub-Saharan African region has the lowest life expectancy, while regions like North America and Western Europe have the highest life expectancy. This makes sense because certain regions around the world are more developed than others. 
+Above we can see the differences in life expectancy around the world. This map allows us to visualize how life expectancy varies between regions. It appears that that the Sub-Saharan African region has the lowest life expectancy, while regions like North America and Western Europe have the highest life expectancy.
 
 ```{r correlated-predictors, fig.height = 3, fig.width = 8}
 infant_five <- ggplot(data = life, aes(x = `infant deaths`, 
@@ -327,13 +327,11 @@ These two scatter plots demonstrate that the predictor variable `infant deaths` 
 
 ## Methodology
 
-In order to answer the research question, we will be using multivariable linear regression techniques due to the quantitative nature of our response variable, `Life expectancy`.
+In order to answer the research question, we will be using multiple linear regression techniques due to the quantitative nature of our response variable, `Life expectancy`.
 
-In order to create a model capable of predicting life expectancy, we use model selection to cull the number of potential predictor variables. We then assess whether certain interaction terms should be added to the model before addressing multicollinearity. Finally, with the set of predictor variables finalized, we ascertain whether any variable transformations are necessary through condition checking and identify outliers by examining model diagnostics. 
+In order to create a model capable of predicting life expectancy, we will use model selection to cull the number of potential predictor variables. We will then assess whether certain interaction terms should be added to the model before addressing multicollinearity. Finally, with the set of predictor variables finalized, we ascertain whether any variable transformations are necessary through condition checking and identifying outliers by examining model diagnostics. 
 
 ### Model Selection
-
-The response variable we will be using in this project is `Life expectancy`. This is a measure of the average age of death in a year for the given country during that year. In terms of regression model technique, we will be using multiple linear regression because our response variable is quantitative.
 
 The goal of our analysis is to calculate the most precise prediction of the response variable (`Life expectancy`). To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criterion while backward selection means dropping variables one at a time, starting with our full model (Appendix Table 9), that are deemed irrelevant based on AIC or BIC.
 
@@ -393,9 +391,7 @@ kable(out[-1, ], caption = "Potential Models", digits = 3)
 selected_model <- backward_aic
 ```
 
-Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric (AIC and $R^2$). 
-
-\newpage
+Based on AIC and adjusted $R^2$, we prefer the model we found through backward selection using AIC. This model results in the highest adjusted $R^2$ out of all four models. Moreover, this model is the only model out of the four that is superior to the remaining three models in more than one metric (AIC and adjusted $R^2$). 
 
 ### Potential Interaction Terms
 
@@ -439,7 +435,7 @@ vif(selected_model) %>%
 ```
 Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`. These two relationships were visualized in the EDA. 
 
-We should try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we ought to compare models with only `Income composition of resources` or `Schooling` and keep only one of the two. 
+We will try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we will compare models with only `Income composition of resources` or `Schooling` and keep only one of the two. 
 
 ```{r infant-five}
 inf <- lm(`Life expectancy` ~ Region + `Adult Mortality` +
@@ -535,7 +531,7 @@ kable(high_res, caption = "Life Expectancy Outliers", digits = 3)
 
 The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, the two countries Iraq and Lesotho are moderate outliers. Two other countries, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
 
-Moreover, the standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. The visualization illustrating this observation can be found in the appendix. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
+Moreover, the standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. The visualization illustrating this observation can be found below, in the appendix section. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
 
 ```{r region, results = "hide"}
 count(life, Region)
@@ -566,9 +562,11 @@ selected_model_aug %>%
   select(Country, .cooksd) 
 ```
 
-The 12 countries in the table above have high leverage (leverage > leverage_threshold = 0.3230769) while no countries are influential (Cook's Distance > 0.5). 
+In terms of leverage and influential points, the 12 countries in the table above have high leverage (leverage > leverage_threshold = 0.3230769) while no countries are influential (Cook's Distance > 0.5). 
 
 ## Results
+
+### Final Model
 
 ```{r selected-model}
 (table_selected_model <- kable(tidy(selected_model),
@@ -598,23 +596,28 @@ am_coef <- selected_model$coefficients["`Adult Mortality`"] %>%
 
 This is our final model. Around `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, and `Income composition of resources`. The AIC is about `r aic`, and the BIC is approximately `r bic`. 
 
+
+### Key Findings and Conclusions
+
 One interesting key finding when looking at the variables included in our selected model is that the predictors for life expectancy were extremely multifaceted. Variables that related to health-related, economic, and social measures of a country all play an important part in predicting life expectancy.
 
-Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant. The coefficient of `Income composition of resources` is highly significant, with a p-value near 0. 
+Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant. 
 
-Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information that differentiates geographic regions were missing from our data. If this project were to be expanded, it would be important to include more than 23 potential variables in the full model.
+Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't tell us the full story. Therefore, it's reasonable to assume that some information that differentiates geographic regions was missing from our data. If this project were to be expanded, it would be important to include more than 23 potential variables in the full model.
 
 Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variable's coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
-In terms of our initial hypotheses, the coefficient of only one variable that we thought would have a major effect on `Life expectancy` is significant: `Adult Mortality`. Per 100 adults (ages 15 to 60) out of 1000 that die, life expectancy is expected to decrease by around `r -1 * am_coef` years if every other variable do not change. The other variables that we proposed, `infant deaths`, `under-five deaths`, and `Total expenditure` either are not included in the final model or are not significantly different from 0 at the 0.05 level. 
+In terms of our initial hypotheses, the coefficient of only one variable that we thought would have a major effect on `Life expectancy` is significant: `Adult Mortality`. Per 100 adults (ages 15 to 60) out of 1000 that die, life expectancy is expected to decrease by around `r -1 * am_coef` years, holding all else constant. The other variables that we hypothesized at the beginning of the project, `infant deaths`, `under-five deaths`, and `Total expenditure` either are not included in the final model or are not significantly different from 0 at the 0.05 significance level. Other significant variables are `Income composition of resources` and `HIV/AIDS` with p-values near 0. 
 
-### Prediction
+\newpage
+
+### Assessing Predictive Power
 
 To evaluate the predictive power of our model, we predicted the life expectancy
 for each country during 2012 and compared to the observed values from the 
-original `life` dataset. The residual plot is shown below.
+original `life` dataset. We chose 2012 because we thought that one important application of a predictive model for life expectancy would be to predict life expectancy for the following year. The residual plot is shown below.
 
-```{r prediction, fig.height = 3, fig.width = 8}
+```{r prediction, fig.height = 4, fig.width = 8}
 # Dataframe of baseline observations for predicting
 base_obs <- life %>%
   select(Country, Region, `Adult Mortality`, `infant deaths`, `Hepatitis B`, Measles,
@@ -720,6 +723,8 @@ title <- plot_annotation("Checking Linearity")
 (plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]]) /
   (plots[[5]] + plots[[6]] + plots[[7]] + plots[[8]]) + title
 ```
+
+\newpage
 
 ## References
 
