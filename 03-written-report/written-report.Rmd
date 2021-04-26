@@ -246,9 +246,6 @@ p5 <- ggplot(data = by_status, aes(x = `Status`, y = `mean`)) +
   theme(plot.title = element_text(size=11), 
         axis.title=element_text(size=10),
         plot.subtitle = element_text(size=9))
-#+
- # coord_flip()
-
 ```
 
 ```{r, fig.height = 3, fig.width = 6}
@@ -257,7 +254,7 @@ p4 <- ggplot(data = life, aes(x = `Adult Mortality`,
   geom_point(aes(size = `infant deaths`)) +
   labs(x = "Adult Mortality",
        y = "Life Expectancy",
-       size = "Infant deaths per 1000",
+       size = "Infant deaths\nper 1000",
        title = "Life Expectancy vs. Adult Mortality") + 
   theme(plot.title = element_text(size=11), 
         axis.title=element_text(size=10),
@@ -267,9 +264,9 @@ p4 <- ggplot(data = life, aes(x = `Adult Mortality`,
 (p5 + p4)
 ```
 
-In terms of the resposne variable, we see that life expectancy is left skewed with a center just over 70 years. Life expectancy ranges from about 50 years to 90 years. 
+In terms of the response variable, we see that `Life expectancy` is left skewed with a center just over 70 years. `Life expectancy` ranges from about 50 years to 90 years. 
 
-For relationships with predictor variables, we see that a strong negative relationship exists between life expectancy and adult mortality. We also a see a strange diversion in the points between countries that have lower and higher adult mortalities. We predict that this is because some of those countries have higher infant mortalities, driving life expectancy down. We also see much higher life expectancies among countries with the `status` "developed" than "developing", with a difference of about 12 years.
+For relationships with predictor variables, we see that a strong negative relationship exists between `Life expectancy` and `Adult Mortality`. We also a see a strange diversion in the points between countries that have lower and higher values for `Adult mortality`. There appears to be two groups of countries in the scatter plot, a smaller group that exhibits a greater `Life expectancy` penalty for a given increase in `Adult Mortality` than the larger group. We thought that this is because some of those countries have higher infant mortalities, driving life expectancy down. However, when points are sized according to `infant deaths`, this is shown not to be the case. We also see much higher `Life expectancy` among countries with the `status` "developed" than "developing", with a difference of about 12 years.
 
 
 ```{r world map}
@@ -318,14 +315,14 @@ infant_five <- ggplot(data = life, aes(x = `infant deaths`,
 schooling_income <- ggplot(data = life, 
                            aes(x = Schooling, 
                                y = `Income composition of resources`)) +
-  geom_point() +
-  labs(y = "Income Composition of Resources")
+  geom_point()
 
 title <- plot_annotation("Correlated Predictors")
 
 infant_five + schooling_income + title
 ```
 
+These two scatter plots demonstrate that the predictor variable `infant deaths` is correlated with the predictor variable `under-five deaths`. Likewise, two other predictor variables, `Income composition of resources` and `Schooling`, are clearly associated with one another. This finding will be addressed as we construct our model.
 
 ## Methodology
 
@@ -537,23 +534,13 @@ kable(high_res, caption = "Life Expectancy Outliers", digits = 3)
 
 The plot above depicts standardized residuals on the y-axis and predicted values on the x-axis. We see no major departure from the constant variance assumption. However, two countries, Iraq and Lesotho are moderate outliers and two, Angola and Sierra Leone, are severe outliers in terms of their life expectancy. Specifically, Iraq has a much higher life expectancy than what we would expect given the values of its predictor variables while Angola, Lesotho, and Sierra Leone have far lower values for life expectancy than what was predicted. 
 
-```{r linearity-viz, fig.height = 10, fig.width = 8}
-# https://www.youtube.com/watch?v=nqI5CmdUYRQ
-plot_predictor <- function(variable) {
-  ggplot(data = selected_model_aug, 
-         aes(x = .data[[variable]], 
-             y = .std.resid)) +
-    geom_point() +
-    labs(x = variable,
-         y = "Standardized Residual")
-}
-plots <- map(names(selected_model_aug)[3:10], plot_predictor)
-title <- plot_annotation("Checking Linearity")
-(plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]]) /
-  (plots[[5]] + plots[[6]] + plots[[7]] + plots[[8]]) + title
+Moreover, the standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. The visualization illustrating this observation can be found in the appendix. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
+
+```{r region, results = "hide"}
+count(life, Region)
 ```
 
-The standardized residuals do not display a discernible pattern when plotted against any of the quantitative variables. This combined with the similar lack of any relationship in the plot of standardized residuals vs. predicted values above indicates that the linearity assumption holds. 
+Lastly, we do not believe the independence condition for multiple linear regression can be considered fulfilled in our case. This is because countries are likely associated with one another in ways that we cannot capture with our model even though we did include `Region` as a predictor variable to try to address spatial correlation. For instance, some categories of `Region` are especially large (`SUB-SAHARAN AFRICA` encompasses 49 nations), yet others are quite small (`BALTICS` includes only 3 nations). Those countries within `SUB-SAHARAN AFRICA` may have yet more relationships with one another for which we simply cannot account with our current data set.
 
 ```{r threshold}
 # (2(p+1))/n
@@ -588,21 +575,37 @@ The 12 countries in the table above have high leverage (leverage > leverage_thre
                                digits = 3))
 
 r_sq <- selected_model %>%
-  glance %>%
+  glance() %>%
   select(r.squared) %>%
+  prod(100) %>%
+  round(2)
+
+aic <- selected_model %>%
+  glance() %>%
+  select(AIC) %>%
+  round(2)
+
+bic <- selected_model %>%
+  glance() %>%
+  select(BIC) %>%
+  round(2)
+
+am_coef <- selected_model$coefficients["`Adult Mortality`"] %>%
   prod(100) %>%
   round(2)
 ```
 
-This is our final model. `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, and `Income composition of resources`.
+This is our final model. Around `r r_sq`% of the variation in the `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, and `Income composition of resources`. The AIC is about `r aic`, and the BIC is approximately `r bic`. 
 
 One interesting key finding when looking at the variables included in our selected model is that the predictors for life expectancy were extremely multifaceted. Variables that related to health-related, economic, and social measures of a country all play an important part in predicting life expectancy.
 
+Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant. The coefficient of `Income composition of resources` is highly significant, with a p-value near 0. 
+
 Additionally, when looking at the selected model, a few other key findings stand out. First, it was interesting to see the estimated coefficients of the different regions, which can be interpreted as the expected average life expectancy above the baseline of Asia (excluding Near East), holding all other predictors constant. The region of Sub-Saharan Africa had the lowest coefficient of -2.576 while the region Western Europe had the highest coefficient of 4.905. According to our model, these discrepancies are solely because of the difference in geographic region, which logically doesn't make much sense. Therefore, it's reasonable to assume that some information that differentiates geographic regions were missing from our data. If this project, were to be expanded, it would be important to include more than 23 potential variables in the full model.
 
-Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variables' coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
+Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variable's coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
-Something else that stands out is the extremely high estimated coefficient (31.747) of `Income composition of resources`. However, this makes sense when it is understood that the variable's unit (HDI) is measured on a scale of 0 to 1. Therefore, it is more informative to interpret this variable in smaller units than an increase by one, such as an increase by 0.01. In that case, for each additional 0.01 increase in HDI, we expect life expectancy to increase by about 0.32 years or about 4 months, on average, holding all other predictor variables constant.
+In terms of our initial hypotheses, the coefficient of only one variable that we thought would have a major effect on `Life expectancy` is significant: `Adult Mortality`. Per 100 adults (ages 15 to 60) out of 1000 that die, life expectancy is expected to decrease by around `r -1 * am_coef` years if every other variable do not change. The other variables that we proposed, `infant deaths`, `under-five deaths`, and `Total expenditure` either are not included in the final model or are not significantly different from 0 at the 0.05 level. 
 
 ### Prediction
 
@@ -650,6 +653,7 @@ demonstrating that it can predict future life expectancy relatively accurately.
 
 ## Discussion + Conclusion
 
+As mentioned in the Model Conditions and Diagnostics section, our model struggles when it comes to the independence condition. Indeed, the finding in the EDA that there are two distinct relationships between `Life expectancy` and `Adult mortality` among the countries seems to suggest that there is some unseen way in which countries are systematically related to each other. 
 
 ```{r no-response-outliers, results = "hide"}
 table_selected_model
@@ -688,7 +692,7 @@ life %>%
   kable(caption = "Model Without High Leverage Countries", digits = 3)
 ```
 
-One caveat for our model is that the data set used to fit the model contains outliers that have an outsized impact on the model itself. If we remove the four countries with large-magnitude standardized residuals from the data set and refit the model, we observe a dramatic effect on the p-value of `Total expenditure`. Whereas the coefficient had been positive and non-significant with a p-value above 0.2 in the model with the four countries, it becomes very significant with a p-value of around 0.008 once these observations are absent from the data set. Upon closer inspection, we found that individually removing Iraq, Lesotho, and Sierra Leone reduces the p-value of `Total expenditure`. However, removing Angola increases the p-value. Thus, it appears that it is the former three countries that are behind this effect. On the other hand, there are no differences between the model that excludes high leverage observations and the selected model that are as dramatic as the one between the model that excludes large-magnitude standardized residual observations and the selected model.
+Another caveat for our model is that the data set used to fit the model contains outliers that have an outsized impact on the model itself. If we remove the four countries with large-magnitude standardized residuals from the data set and refit the model, we observe a dramatic effect on the p-value of `Total expenditure`. Whereas the coefficient had been positive and non-significant with a p-value above 0.2 in the model with the four countries, it becomes very significant with a p-value of around 0.008 once these observations are absent from the data set. Upon closer inspection, we found that individually removing Iraq, Lesotho, and Sierra Leone reduces the p-value of `Total expenditure`. However, removing Angola increases the p-value. Thus, it appears that it is the former three countries that are behind this effect. On the other hand, there are no differences between the model that excludes high leverage observations and the selected model that are as dramatic as the one between the model that excludes large-magnitude standardized residual observations and the selected model.
 
 \newpage
 
@@ -698,6 +702,22 @@ One caveat for our model is that the data set used to fit the model contains out
 tidy(full_model) %>%
   kable(caption = "Full Model With All Possible Predictor Variables", 
         digits = 3)
+```
+
+```{r linearity-viz, fig.height = 10, fig.width = 8}
+# https://www.youtube.com/watch?v=nqI5CmdUYRQ
+plot_predictor <- function(variable) {
+  ggplot(data = selected_model_aug, 
+         aes(x = .data[[variable]], 
+             y = .std.resid)) +
+    geom_point() +
+    labs(x = variable,
+         y = "Standardized Residual")
+}
+plots <- map(names(selected_model_aug)[3:10], plot_predictor)
+title <- plot_annotation("Checking Linearity")
+(plots[[1]] + plots[[2]] + plots[[3]] + plots[[4]]) /
+  (plots[[5]] + plots[[6]] + plots[[7]] + plots[[8]]) + title
 ```
 
 ## References
