@@ -136,7 +136,7 @@ Over the course of history, life expectancy has risen dramatically. It is estima
 
 In addition to the more obvious health-related connections to life expectancy, numerous pieces of academic literature have delved into the non-medical factors behind life expectancy. A major example is a longitudinal study conducted by Charles Lin, Eugene Rogot, Norman Johnson, Paul Sorlie, and Elizabeth Arias, which examined life expectancy by socioeconomic factors.[2] Academic literature such as this provides us with motivations to examine this topic on an international level, where we can look at various health-related and non-health-related factors that connect to life expectancy.
 
-In terms of initial hypotheses of model selection, we expect that strong predictors of life expectancy will be `Adult Mortality`, `infant deaths`, `under-five deaths`, and `Total expenditure`. We also predict that countries that have `Status` equal to "Developed" will have higher life expectancy than those that have `status` equal to "Developing".
+In terms of initial hypotheses of model selection, we expect that strong predictors of life expectancy will be adult death rate, infant death rate, under-five deaths death rate, and a government's expenditure on health. We also predict that countries that are developed will have higher life expectancies than those that are developing.
 
 Our primary data set is comprised of information that had been gleaned from the websites of the World Health Organization and the United Nations.[3] Each entry describes the health, social, and economic conditions for one of 193 countries in a given year from 2000 to 2015.[3] Because this dataset lacks a variable that specifies the region of each country, we joined it with another data set that pairs country and region.[4] This secondary data set compiles information that can be found on the CIA World Factbook.[4] Both data were found on Kaggle and credit is given to Kumar Rajarshi, Deeksha Russell, Duan Wang, Fernando Lasso, and the above organizations for contributing to the creation of our datasets.
 
@@ -251,7 +251,7 @@ p5 <- ggplot(data = by_status, aes(x = `Status`, y = `mean`)) +
 p4 <- ggplot(data = life, aes(x = `Adult Mortality`, 
                               y = `Life expectancy`)) +
   geom_point(aes(size = `infant deaths`)) +
-  labs(x = "Adult Mortality",
+  labs(x = "Adult deaths per 1000",
        y = "Life Expectancy",
        size = "Infant deaths\nper 1000",
        title = "Life Expectancy vs. Adult Mortality") + 
@@ -263,9 +263,9 @@ p4 <- ggplot(data = life, aes(x = `Adult Mortality`,
 (p4 + p5)
 ```
 
-In terms of the response variable, we see that `Life expectancy` is skewed to the left with a center just over 70 years. `Life expectancy` ranges from about 50 years to 90 years. 
+In terms of the response variable, we see that life expectancy is skewed to the left with a center just over 70 years. Life expectancy ranges from about 50 years to 90 years. 
 
-For relationships with predictor variables, we see that a strong negative relationship exists between `Life expectancy` and `Adult Mortality`. We also a see a strange diversion in the points between countries that have lower and higher values for `Adult mortality`. There appears to be two groups of countries in the scatter plot, a smaller group that exhibits a greater `Life expectancy` penalty for a given increase in `Adult Mortality` than the larger group. We thought that this is because some of those countries have higher infant mortalities, driving life expectancy down. However, when points are sized according to `infant deaths`, this is shown not to be the case. We also see much higher `Life expectancy` among countries with the `status` "developed" than "developing", with a difference of about 12 years.
+For relationships with predictor variables, we see that a strong negative relationship exists between life expectancy and adult deaths We also a see a strange diversion in the points between countries that have lower and higher values for adult deaths. There appears to be two groups of countries in the scatter plot, a smaller group that exhibits a greater life expectancy penalty for a given increase in adult deaths than the larger group. We thought that this is because some of those countries have higher amounts of infant deaths, driving life expectancy down. However, when points are sized according to infant deaths, this is shown not to be the case. We also see much higher life expectancy among countries that are developed than developing, with a difference of about 12 years.
 
 
 ```{r world map}
@@ -309,20 +309,22 @@ Above we can see the differences in life expectancy around the world. This map a
 infant_five <- ggplot(data = life, aes(x = `infant deaths`, 
                                        y = `under-five deaths`)) +
   geom_point() +
-  labs(x = "Infant Deaths",
-       y = "Under-five Deaths")
+  labs(x = "Infant deaths per 1000",
+       y = "Under-five deaths per 1000")
 
 schooling_income <- ggplot(data = life, 
                            aes(x = Schooling, 
                                y = `Income composition of resources`)) +
-  geom_point()
+  geom_point() +
+  labs(x = "Average years of schooling",
+       y = "Income composition of resources")
 
 title <- plot_annotation("Correlated Predictors")
 
 infant_five + schooling_income + title
 ```
 
-These two scatter plots demonstrate that the predictor variable `infant deaths` is correlated with the predictor variable `under-five deaths`. Likewise, two other predictor variables, `Income composition of resources` and `Schooling`, are clearly associated with one another. These findings will be addressed as we construct our model.
+These two scatter plots demonstrate that infant deaths is correlated with under-five deaths. Likewise, income composition of resources (HDI) and average years of schooling, are clearly associated with one another. These findings will be addressed as we construct our model.
 
 ## Methodology
 
@@ -332,7 +334,7 @@ In building a model capable of predicting life expectancy, we will use model sel
 
 ### Model Selection
 
-The goal of our analysis is to calculate the most precise prediction of the response variable (`Life expectancy`). To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criterion while backward selection means dropping variables one at a time, starting with our full model (Appendix Table 9), that are deemed irrelevant based on AIC or BIC.
+The goal of our analysis is to calculate the most precise prediction of life expectancy. To do this we will perform forward and backward selection using AIC and BIC. Forward selection entails adding variables recursively using AIC or BIC as the criterion while backward selection means dropping variables one at a time, starting with our full model (Appendix Table 9), that are deemed irrelevant based on AIC or BIC.
 
 ```{r full-model}
 life <- life %>%
@@ -434,7 +436,7 @@ vif(selected_model) %>%
   rename(Variable = names, VIF = x) %>%
   kable(caption = "Predictor Variable VIFs", digits = 3)
 ```
-Variables with a VIF > 10 will have issues with multicollinearity. `infant deaths` and `under-five deaths` are clearly highly correlated (this makes a lot of sense in the context of the data). `Income composition of resources` appears to be correlated with `Schooling`. These two relationships were visualized in the EDA. 
+Variables with a VIF > 10 will have issues with multicollinearity. Infant death rate and under-five death rate are clearly highly correlated (this makes a lot of sense in the context of the data). Income composition of resources appears to be correlated with average number of years of schooling`. These two relationships were visualized in the EDA. 
 
 We will try models without `infant deaths` or without `under-five deaths` and then use model comparison techniques to decide on which of these two variables should be removed. Likewise, we will compare models with only `Income composition of resources` or `Schooling` and keep just one of the two variables. 
 
@@ -538,7 +540,7 @@ Moreover, the standardized residuals do not display a discernible pattern when p
 count(life, Region)
 ```
 
-Lastly, we do not believe the independence condition for multiple linear regression can be considered fulfilled in our case. This is because countries are likely associated with one another in ways that we cannot capture with our model even though we did include `Region` as a predictor variable to try to address spatial correlation. For instance, some categories of `Region` are especially large (`SUB-SAHARAN AFRICA` encompasses 49 nations), yet others are quite small (`BALTICS` includes only 3 nations). Those countries within `SUB-SAHARAN AFRICA` may have yet more relationships with one another for which we simply cannot account with our current data set.
+Lastly, we do not believe the independence condition for multiple linear regression can be considered fulfilled in our case. This is because countries are likely associated with one another in ways that we cannot capture with our model even though we did include `Region` as a predictor variable to try to address spatial correlation. For instance, some categories of `Region` are especially large (Sub-Saharan Africa encompasses 49 nations), yet others are quite small (Baltics includes only 3 nations). Those countries within the Sub-Saharan Africa region may have yet more relationships with one another for which we simply cannot account with our current data set.
 
 ```{r threshold}
 # (2(p+1))/n
@@ -595,7 +597,7 @@ am_coef <- selected_model$coefficients["`Adult Mortality`"] %>%
   round(2)
 ```
 
-This is our final model. Around `r r_sq`% of the variation in `Life expectancy` is explained by the regression model above, which contains the predictor variables: `Region`, `Adult Mortality`, `infant deaths`, `Hepatitis B`, `Measles`, `Total expenditure`, `Diphtheria`, `HIV/AIDS`, and `Income composition of resources`. The AIC is about `r aic`, and the BIC is approximately `r bic`. 
+This is our final model. Around `r r_sq`% of the variation in life expectancy is explained by the regression model above, which contains the predictor variables: region, adult death rate, infant death rate, Hepatitis B immunization rate, rate of Measles cases, total expenditure on health, Diphtheria immunization rate, HIV/AIDS death rate, and income composition of resources (HDI). The AIC is about `r aic`, and the BIC is approximately `r bic`. 
 
 
 ### Key Findings and Conclusions
@@ -608,7 +610,7 @@ Additionally, when looking at the selected model, a few other key findings stand
 
 Also, it is strange to see that according to our model, an increase in infant deaths is expected to increase life expectancy, on average (due to the positive estimated coefficient). This clearly doesn't make much sense. However, this can be taken with a grain of salt since the p-value is relatively high at 0.409. This means that assuming the null hypothesis that this variable's coefficient is equal to 0 is true, the probability of observing a coefficient at least as extreme as the one we've observed is not unlikely.
 
-In terms of our initial hypotheses, the coefficient of only one variable that we thought would have a major effect on `Life expectancy` is significant: `Adult Mortality`. Per 100 adults (ages 15 to 60) out of 1000 that die, life expectancy is expected to decrease by around `r -1 * am_coef` years, holding all else constant. The other variables that we hypothesized at the beginning of the project, `infant deaths`, `under-five deaths`, and `Total expenditure` either are not included in the final model or are not significantly different from 0 at the 0.05 significance level. Other significant variables are `Income composition of resources` and `HIV/AIDS` with p-values near 0. 
+In terms of our initial hypotheses, the coefficient of only one variable that we thought would have a major effect on life expectancy is significant: adult death rate. Per 100 adults (ages 15 to 60) that die out of 1000, life expectancy is expected to decrease by around `r -1 * am_coef` years, holding all else constant. The other variables that we hypothesized at the beginning of the project, infant death rate, under-five death rate, and total expenditure on health either are not included in the final model or are not significantly different from 0 at the 0.05 significance level. Other significant predictor variables are income composition of resources and HIV/AIDS death rate which have p-values near 0. 
 
 \newpage
 
@@ -653,12 +655,12 @@ relatively constant vertical spread. The residuals are positive on average,
 with a sum of `r sum(pred_life$res)`. This indicates that the model slightly
 underpredicts life expectancy for the next year (2012), but appears fairly accurate
 overall. We also see that $R^2=$ `r rsq`. This means that over 90% of the 
-variability in 2012 `Life expectancy` can be explained by our model, further 
-demonstrating that it can predict future `life expectancy` relatively accurately.
+variability in 2012 life expectancy can be explained by our model, further 
+demonstrating that it can predict future life expectancy relatively accurately.
 
 ## Discussion + Conclusion
 
-As mentioned in the Model Conditions and Diagnostics section, our model struggles when it comes to the independence condition. Indeed, the finding in the EDA that there are two distinct relationships between `Life expectancy` and `Adult mortality` among the countries seems to suggest that there is some unseen way in which countries are systematically related to each other. 
+As mentioned in the Model Conditions and Diagnostics section, our model struggles when it comes to the independence condition. Indeed, the finding in the EDA that there are two distinct relationships between life expectancy and adult death rate among the countries seems to suggest that there is some unseen way in which countries are systematically related to each other. 
 
 ```{r no-response-outliers, results = "hide"}
 table_selected_model
