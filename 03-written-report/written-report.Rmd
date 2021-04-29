@@ -142,7 +142,7 @@ Our primary data set is comprised of information that had been gleaned from the 
 
 \newpage
 
-*Definitions of Relevant Variables:*
+*Definitions of Relevant Variables:*[3]
 
 Response Variable:
 
@@ -154,7 +154,7 @@ Identifier Variable:
 
 Predictor Variables:
 
-- `Region`: Area, subcontinent, or continent where a country is located
+- `Region`: Area, subcontinent, or continent where a country is located (from secondary data set)[4]
 
 - `Adult Mortality`: Probability of dying between 15 and 60 years per 1000 population 
  

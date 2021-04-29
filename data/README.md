@@ -45,3 +45,7 @@ Variable descriptions from https://www.kaggle.com/kumarajarshi/life-expectancy-w
 **Income composition of resources** - Human Development Index in terms of income composition of resources (index ranging from 0 to 1)
 
 **Schooling** - Number of years of schooling (years)
+
+# Regions
+
+**Region** - Area, subcontinent, or continent where a country is located
